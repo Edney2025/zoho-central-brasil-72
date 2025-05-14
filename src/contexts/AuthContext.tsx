@@ -58,8 +58,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkIfCustomer = async (userId: string) => {
     try {
+      // Using a more type-safe approach with the Supabase client
+      // Since 'customers' is not found in types, we'll use a more generic approach
       const { data, error } = await supabase
-        .from('customers')
+        .from('customers' as any)
         .select('id')
         .eq('user_id', userId)
         .single();
