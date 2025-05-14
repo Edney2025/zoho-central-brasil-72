@@ -5,17 +5,12 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { Outlet } from 'react-router-dom';
 import { ThemeSwitcher } from './ThemeSwitcher';
 import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
 
 export const MainLayout = () => {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
   
   if (loading) {
     return <div className="flex items-center justify-center h-screen">Carregando...</div>;
-  }
-  
-  if (!user) {
-    return <Navigate to="/login" />;
   }
   
   return (

@@ -17,29 +17,12 @@ import {
   Package,
   Settings,
   Calculator,
-  FileText,
-  LogOut
+  FileText
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/components/ui/use-toast';
 
 export const AppSidebar = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      toast({
-        title: "Logout bem-sucedido",
-        description: "Você saiu do sistema com sucesso.",
-      });
-      navigate('/login');
-    } catch (error) {
-      console.error("Erro ao fazer logout:", error);
-    }
-  };
 
   const menuItems = [
     {
@@ -94,19 +77,6 @@ export const AppSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton className="text-red-500" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4" />
-                  <span>Sair</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
