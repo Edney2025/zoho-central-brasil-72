@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,18 +58,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkIfCustomer = async (userId: string) => {
     try {
-      // Using a type assertion at the response level rather than the table name level
-      const response = await supabase
-        .from('customers')
+      // Use a type assertion for the entire query result instead
+      const { data, error } = await (supabase
+        .from('customers') as any)
         .select('id')
         .eq('user_id', userId)
         .single();
         
       // Handle potential errors
-      if (response.error) throw response.error;
+      if (error) throw error;
       
       // If we get here, we have a valid customer
-      setIsCustomer(!!response.data);
+      setIsCustomer(!!data);
     } catch (error) {
       console.error('Error checking customer status:', error);
       setIsCustomer(false);
