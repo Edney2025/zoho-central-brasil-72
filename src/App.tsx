@@ -27,6 +27,17 @@ import EmprestimosPage from "./pages/Emprestimos/EmprestimosPage";
 import FinanciamentosPage from "./pages/Financiamentos/FinanciamentosPage";
 import GarantiasPage from "./pages/Garantias/GarantiasPage";
 import OutrosProdutosPage from "./pages/OutrosProdutos/OutrosProdutosPage";
+
+// Portal do Cliente pages
+import AuthPage from "./pages/Portal/AuthPage";
+import PortalLayout from "./pages/Portal/PortalLayout";
+import DashboardPage from "./pages/Portal/DashboardPage";
+import PedidosPortalPage from "./pages/Portal/PedidosPage";
+import OrcamentosPage from "./pages/Portal/OrcamentosPage";
+import SuportePage from "./pages/Portal/SuportePage";
+import FAQPage from "./pages/Portal/FAQPage";
+import ProfilePage from "./pages/Portal/ProfilePage";
+
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
@@ -43,9 +54,7 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <Routes>
-                {/* Redirecionamento direto para o dashboard */}
-                <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-                
+                {/* Admin/Staff Routes */}
                 <Route path="/" element={<MainLayout />}>
                   <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
@@ -70,6 +79,19 @@ const App = () => {
                   <Route path="outros-produtos" element={<OutrosProdutosPage />} />
                 </Route>
                 
+                {/* Customer Portal Routes */}
+                <Route path="/portal/login" element={<AuthPage />} />
+                <Route path="/portal" element={<PortalLayout />}>
+                  <Route index element={<Navigate to="/portal/dashboard" replace />} />
+                  <Route path="dashboard" element={<DashboardPage />} />
+                  <Route path="pedidos" element={<PedidosPortalPage />} />
+                  <Route path="orcamentos" element={<OrcamentosPage />} />
+                  <Route path="suporte" element={<SuportePage />} />
+                  <Route path="faq" element={<FAQPage />} />
+                  <Route path="profile" element={<ProfilePage />} />
+                </Route>
+                
+                {/* Redirect all unknown routes */}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </BrowserRouter>
