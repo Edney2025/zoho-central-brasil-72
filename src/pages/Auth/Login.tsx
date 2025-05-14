@@ -27,6 +27,11 @@ const Login = () => {
       navigate('/dashboard');
     } catch (error) {
       console.error('Erro ao fazer login:', error);
+      toast({
+        title: 'Erro no login',
+        description: 'Verifique seu email e senha',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
