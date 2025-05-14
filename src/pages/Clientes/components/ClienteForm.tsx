@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,10 +13,27 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  User, Building, CreditCard, FileText, Shield, Check, Upload, ArrowRight, ArrowLeft
+  User, Building, CreditCard, FileText, Shield, Check, Upload, ArrowRight, ArrowLeft,
+  Trash2, Eye
 } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { supabase } from "@/integrations/supabase/client";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 // Form schemas using Zod
 const pessoalSchema = z.object({
@@ -92,12 +109,39 @@ const clienteSchema = z.object({
 
 type ClienteFormValues = z.infer<typeof clienteSchema>;
 
-const ClienteForm = () => {
+interface DocumentFile {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  file: File;
+  preview?: string;
+  uploaded?: boolean;
+  path?: string;
+}
+
+interface ClienteFormProps {
+  clienteId?: string | null;
+  onSaved?: () => void;
+}
+
+const ClienteForm: React.FC<ClienteFormProps> = ({ clienteId, onSaved }) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("pessoal");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   const [step, setStep] = useState(1);
   const [solicitaEmprestimo, setSolicitaEmprestimo] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<Record<string, DocumentFile[]>>({
+    rgCpf: [],
+    comprovanteResidencia: [],
+    comprovanteRenda: [],
+    contrato: []
+  });
+  const [previewFile, setPreviewFile] = useState<DocumentFile | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [deleteFileInfo, setDeleteFileInfo] = useState<{file: DocumentFile, type: string} | null>(null);
+  const [isDeleteFileDialogOpen, setIsDeleteFileDialogOpen] = useState(false);
   
   // Initialize form with react-hook-form and zod validation
   const form = useForm<ClienteFormValues>({
@@ -119,6 +163,115 @@ const ClienteForm = () => {
     },
     mode: "onChange"
   });
+  
+  // Load client data if editing
+  useEffect(() => {
+    if (clienteId) {
+      const fetchClienteData = async () => {
+        setIsLoadingData(true);
+        try {
+          // In a real app, this would fetch from Supabase
+          // const { data, error } = await supabase
+          //   .from('clientes')
+          //   .select('*')
+          //   .eq('id', clienteId)
+          //   .single();
+          
+          // if (error) throw error;
+          
+          // For demo purposes, use mock data
+          const mockCliente = {
+            id: "1",
+            pessoal: {
+              nome: "João Silva",
+              email: "joao@example.com",
+              telefone: "(11) 98765-4321",
+              cpf: "123.456.789-00",
+              dataNascimento: "1985-06-15",
+              genero: "masculino",
+              endereco: "Rua das Flores, 123",
+              cidade: "São Paulo",
+              estado: "SP",
+              cep: "01234-567",
+              isPessoaJuridica: false,
+            },
+            solicitaEmprestimo: true,
+            emprestimos: {
+              tipoEmprestimo: "pessoal",
+              valorSolicitado: "10000",
+              finalidade: "capital_giro",
+              prazoPagamento: "12",
+              taxaJuros: "1.99",
+              numeroParcelas: "12",
+              valorParcelas: "916.67",
+            },
+            credito: {
+              scoreCredito: "750",
+              referenciaBancaria: "Banco XYZ",
+              contaCorrente: "1234-5",
+              garantiasOferecidas: "sem_garantia",
+            },
+            pagamento: {
+              formaPagamento: "boleto",
+              dataVencimento: "10",
+              limiteCredito: "15000",
+              primeiraParcela: "2023-11-10",
+            },
+            documentos: {
+              rgCpf: true,
+              comprovanteResidencia: true,
+              comprovanteRenda: false,
+              contrato: false,
+            },
+            declaracoes: {
+              consentimentoAnaliseCredito: true,
+              aceitaTermos: true,
+            },
+          };
+          
+          // Populate form with client data
+          form.reset(mockCliente);
+          setSolicitaEmprestimo(mockCliente.solicitaEmprestimo || false);
+          
+          // Mock uploaded documents
+          setUploadedFiles({
+            rgCpf: [{
+              id: "1",
+              name: "documento_identidade.pdf",
+              type: "application/pdf",
+              size: 1500000,
+              file: new File([""], "documento_identidade.pdf", { type: "application/pdf" }),
+              uploaded: true,
+              path: "/uploads/documento_identidade.pdf",
+            }],
+            comprovanteResidencia: [{
+              id: "2",
+              name: "conta_luz.pdf",
+              type: "application/pdf",
+              size: 980000,
+              file: new File([""], "conta_luz.pdf", { type: "application/pdf" }),
+              uploaded: true,
+              path: "/uploads/conta_luz.pdf",
+            }],
+            comprovanteRenda: [],
+            contrato: [],
+          });
+          
+        } catch (error) {
+          console.error("Erro ao buscar dados do cliente:", error);
+          toast({
+            title: "Erro ao carregar dados",
+            description: "Não foi possível carregar os dados do cliente.",
+            variant: "destructive"
+          });
+        } finally {
+          setIsLoadingData(false);
+        }
+      };
+      
+      fetchClienteData();
+    }
+  }, [clienteId, form, toast]);
   
   const isPessoaJuridica = form.watch("pessoal.isPessoaJuridica");
   
@@ -191,43 +344,181 @@ const ClienteForm = () => {
     setStep(prevStep => prevStep - 1);
   };
   
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: string) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const newFile: DocumentFile = {
+        id: crypto.randomUUID(),
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        file: file,
+        preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined
+      };
+      
+      setUploadedFiles(prev => ({
+        ...prev,
+        [type]: [...(prev[type] || []), newFile]
+      }));
+      
+      // Auto-check the corresponding field in the form
+      if (type === 'rgCpf') form.setValue('documentos.rgCpf', true);
+      if (type === 'comprovanteResidencia') form.setValue('documentos.comprovanteResidencia', true);
+      if (type === 'comprovanteRenda') form.setValue('documentos.comprovanteRenda', true);
+      if (type === 'contrato') form.setValue('documentos.contrato', true);
+    }
+  };
+  
+  const handleDeleteFile = (file: DocumentFile, type: string) => {
+    setDeleteFileInfo({ file, type });
+    setIsDeleteFileDialogOpen(true);
+  };
+  
+  const confirmDeleteFile = () => {
+    if (!deleteFileInfo) return;
+    
+    const { file, type } = deleteFileInfo;
+    
+    // In a real app, we would also delete from storage
+    // if (file.path) {
+    //   await supabase.storage.from('client-documents').remove([file.path]);
+    // }
+    
+    setUploadedFiles(prev => ({
+      ...prev,
+      [type]: prev[type].filter((f) => f.id !== file.id)
+    }));
+    
+    // If no files left, uncheck the form field
+    if (uploadedFiles[type].length <= 1) {
+      if (type === 'rgCpf') form.setValue('documentos.rgCpf', false);
+      if (type === 'comprovanteResidencia') form.setValue('documentos.comprovanteResidencia', false);
+      if (type === 'comprovanteRenda') form.setValue('documentos.comprovanteRenda', false);
+      if (type === 'contrato') form.setValue('documentos.contrato', false);
+    }
+    
+    setIsDeleteFileDialogOpen(false);
+    setDeleteFileInfo(null);
+    
+    toast({
+      title: "Arquivo removido",
+      description: `${file.name} foi removido com sucesso.`
+    });
+  };
+  
+  const handlePreviewFile = (file: DocumentFile) => {
+    setPreviewFile(file);
+    setIsPreviewOpen(true);
+  };
+  
+  const uploadFile = async (file: File, path: string) => {
+    // In a real app, this would upload to Supabase Storage
+    // const fileName = `${crypto.randomUUID()}-${file.name}`;
+    // const filePath = `${path}/${fileName}`;
+    
+    // const { data, error } = await supabase.storage
+    //   .from('client-documents')
+    //   .upload(filePath, file);
+    
+    // if (error) throw error;
+    
+    // return data.path;
+    
+    // Mock successful upload
+    return `uploads/${path}/${file.name}`;
+  };
+  
   const onSubmit = async (data: ClienteFormValues) => {
     try {
       setIsLoading(true);
       
+      // Upload any new documents
+      const uploadPromises = [];
+      
+      for (const [type, files] of Object.entries(uploadedFiles)) {
+        for (const file of files) {
+          if (!file.uploaded) {
+            uploadPromises.push(
+              uploadFile(file.file, type)
+                .then(path => {
+                  // Update the file with the uploaded path
+                  setUploadedFiles(prev => ({
+                    ...prev,
+                    [type]: prev[type].map(f => 
+                      f.id === file.id ? { ...f, uploaded: true, path } : f
+                    )
+                  }));
+                })
+            );
+          }
+        }
+      }
+      
+      // Wait for all uploads to complete
+      await Promise.all(uploadPromises);
+      
       // Prepare data for submission
+      const documentPaths = {};
+      for (const [type, files] of Object.entries(uploadedFiles)) {
+        documentPaths[type] = files.map(f => f.path).filter(Boolean);
+      }
+      
       const clienteData = {
         ...data,
         solicitaEmprestimo,
-        created_at: new Date().toISOString()
+        documentPaths,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       
-      // In a real application, this would be connected to Supabase or another backend
+      // In a real application, this would be connected to Supabase
       console.log("Cliente data to submit:", clienteData);
       
-      // Here would be the Supabase insertion code, once the table is created
-      // const { data: insertedCliente, error } = await supabase
-      //   .from('clientes')
-      //   .insert(clienteData)
-      //   .select();
-      
-      // if (error) throw error;
+      // if (clienteId) {
+      //   // Update existing client
+      //   const { data: updatedCliente, error } = await supabase
+      //     .from('clientes')
+      //     .update(clienteData)
+      //     .eq('id', clienteId)
+      //     .select();
+      //   
+      //   if (error) throw error;
+      // } else {
+      //   // Create new client
+      //   const { data: insertedCliente, error } = await supabase
+      //     .from('clientes')
+      //     .insert(clienteData)
+      //     .select();
+      //   
+      //   if (error) throw error;
+      // }
       
       toast({
-        title: "Cliente cadastrado com sucesso!",
-        description: `O cliente ${data.pessoal.nome} foi cadastrado.`,
+        title: clienteId ? "Cliente atualizado com sucesso!" : "Cliente cadastrado com sucesso!",
+        description: `O cliente ${data.pessoal.nome} foi ${clienteId ? 'atualizado' : 'cadastrado'}.`,
       });
       
-      // Reset form
-      form.reset();
-      setStep(1);
-      setActiveTab("pessoal");
-      setSolicitaEmprestimo(false);
+      // Call the onSaved callback if provided
+      if (onSaved) {
+        onSaved();
+      } else {
+        // Reset form
+        form.reset();
+        setStep(1);
+        setActiveTab("pessoal");
+        setSolicitaEmprestimo(false);
+        setUploadedFiles({
+          rgCpf: [],
+          comprovanteResidencia: [],
+          comprovanteRenda: [],
+          contrato: []
+        });
+      }
       
     } catch (error) {
       console.error("Erro ao cadastrar cliente:", error);
       toast({
-        title: "Erro ao cadastrar cliente",
+        title: "Erro ao salvar cliente",
         description: "Ocorreu um erro ao salvar os dados. Por favor, tente novamente.",
         variant: "destructive"
       });
@@ -244,13 +535,28 @@ const ClienteForm = () => {
   };
   
   const maxSteps = getMaxSteps();
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' bytes';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+  
+  if (isLoadingData) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="ml-3 text-lg">Carregando dados do cliente...</p>
+      </div>
+    );
+  }
   
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Cadastro de Cliente</CardTitle>
+            <CardTitle className="text-2xl">{clienteId ? "Editar Cliente" : "Cadastro de Cliente"}</CardTitle>
             <CardDescription>
               Preencha os dados do cliente. Campos obrigatórios estão marcados com <span className="text-red-500">*</span>
             </CardDescription>
@@ -971,10 +1277,80 @@ const ClienteForm = () => {
                 <div className="grid grid-cols-1 gap-6">
                   <div className="border rounded-lg p-4 space-y-4">
                     <h4 className="font-medium">RG/CPF <span className="text-red-500">*</span></h4>
-                    <div className="w-full h-36 bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground mt-2">Arraste ou clique para fazer upload</p>
+                    <div className="relative">
+                      <label
+                        htmlFor="rgCpfUpload"
+                        className={`w-full h-36 bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed cursor-pointer 
+                        ${uploadedFiles.rgCpf.length > 0 ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}
+                      >
+                        <Upload className={`h-8 w-8 ${uploadedFiles.rgCpf.length > 0 ? 'text-green-500' : 'text-muted-foreground'}`} />
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {uploadedFiles.rgCpf.length > 0 
+                            ? `${uploadedFiles.rgCpf.length} ${uploadedFiles.rgCpf.length === 1 ? 'arquivo enviado' : 'arquivos enviados'}`
+                            : "Arraste ou clique para fazer upload"
+                          }
+                        </p>
+                        <input
+                          id="rgCpfUpload"
+                          type="file"
+                          className="sr-only"
+                          onChange={(e) => handleFileChange(e, 'rgCpf')}
+                          accept=".pdf,.jpg,.jpeg,.png"
+                        />
+                      </label>
                     </div>
+                    
+                    {uploadedFiles.rgCpf.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        {uploadedFiles.rgCpf.map((file) => (
+                          <div key={file.id} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                            <div className="flex items-center">
+                              <FileText className="h-4 w-4 mr-2 text-primary" />
+                              <span className="text-sm font-medium">{file.name}</span>
+                              <span className="ml-2 text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+                            </div>
+                            <div className="flex gap-1">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8"
+                                      onClick={() => handlePreviewFile(file)}
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Visualizar</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 text-destructive"
+                                      onClick={() => handleDeleteFile(file, 'rgCpf')}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Excluir</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
                     <FormField
                       control={form.control}
                       name="documentos.rgCpf"
@@ -984,6 +1360,7 @@ const ClienteForm = () => {
                             <Switch
                               checked={field.value}
                               onCheckedChange={field.onChange}
+                              disabled={uploadedFiles.rgCpf.length === 0}
                             />
                           </FormControl>
                           <div className="space-y-1 leading-none">
@@ -998,10 +1375,80 @@ const ClienteForm = () => {
                   
                   <div className="border rounded-lg p-4 space-y-4">
                     <h4 className="font-medium">Comprovante de Residência <span className="text-red-500">*</span></h4>
-                    <div className="w-full h-36 bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed">
-                      <Upload className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground mt-2">Arraste ou clique para fazer upload</p>
+                    <div className="relative">
+                      <label
+                        htmlFor="comprovanteResidenciaUpload"
+                        className={`w-full h-36 bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed cursor-pointer 
+                        ${uploadedFiles.comprovanteResidencia.length > 0 ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}
+                      >
+                        <Upload className={`h-8 w-8 ${uploadedFiles.comprovanteResidencia.length > 0 ? 'text-green-500' : 'text-muted-foreground'}`} />
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {uploadedFiles.comprovanteResidencia.length > 0 
+                            ? `${uploadedFiles.comprovanteResidencia.length} ${uploadedFiles.comprovanteResidencia.length === 1 ? 'arquivo enviado' : 'arquivos enviados'}`
+                            : "Arraste ou clique para fazer upload"
+                          }
+                        </p>
+                        <input
+                          id="comprovanteResidenciaUpload"
+                          type="file"
+                          className="sr-only"
+                          onChange={(e) => handleFileChange(e, 'comprovanteResidencia')}
+                          accept=".pdf,.jpg,.jpeg,.png"
+                        />
+                      </label>
                     </div>
+                    
+                    {uploadedFiles.comprovanteResidencia.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        {uploadedFiles.comprovanteResidencia.map((file) => (
+                          <div key={file.id} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                            <div className="flex items-center">
+                              <FileText className="h-4 w-4 mr-2 text-primary" />
+                              <span className="text-sm font-medium">{file.name}</span>
+                              <span className="ml-2 text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+                            </div>
+                            <div className="flex gap-1">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8"
+                                      onClick={() => handlePreviewFile(file)}
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Visualizar</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 text-destructive"
+                                      onClick={() => handleDeleteFile(file, 'comprovanteResidencia')}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Excluir</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
                     <FormField
                       control={form.control}
                       name="documentos.comprovanteResidencia"
@@ -1011,6 +1458,7 @@ const ClienteForm = () => {
                             <Switch
                               checked={field.value}
                               onCheckedChange={field.onChange}
+                              disabled={uploadedFiles.comprovanteResidencia.length === 0}
                             />
                           </FormControl>
                           <div className="space-y-1 leading-none">
@@ -1027,10 +1475,80 @@ const ClienteForm = () => {
                     <>
                       <div className="border rounded-lg p-4 space-y-4">
                         <h4 className="font-medium">Comprovante de Renda <span className="text-red-500">*</span></h4>
-                        <div className="w-full h-36 bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed">
-                          <Upload className="h-8 w-8 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground mt-2">Arraste ou clique para fazer upload</p>
+                        <div className="relative">
+                          <label
+                            htmlFor="comprovanteRendaUpload"
+                            className={`w-full h-36 bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed cursor-pointer 
+                            ${uploadedFiles.comprovanteRenda.length > 0 ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}
+                          >
+                            <Upload className={`h-8 w-8 ${uploadedFiles.comprovanteRenda.length > 0 ? 'text-green-500' : 'text-muted-foreground'}`} />
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {uploadedFiles.comprovanteRenda.length > 0 
+                                ? `${uploadedFiles.comprovanteRenda.length} ${uploadedFiles.comprovanteRenda.length === 1 ? 'arquivo enviado' : 'arquivos enviados'}`
+                                : "Arraste ou clique para fazer upload"
+                              }
+                            </p>
+                            <input
+                              id="comprovanteRendaUpload"
+                              type="file"
+                              className="sr-only"
+                              onChange={(e) => handleFileChange(e, 'comprovanteRenda')}
+                              accept=".pdf,.jpg,.jpeg,.png"
+                            />
+                          </label>
                         </div>
+                        
+                        {uploadedFiles.comprovanteRenda.length > 0 && (
+                          <div className="mt-2 space-y-2">
+                            {uploadedFiles.comprovanteRenda.map((file) => (
+                              <div key={file.id} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                <div className="flex items-center">
+                                  <FileText className="h-4 w-4 mr-2 text-primary" />
+                                  <span className="text-sm font-medium">{file.name}</span>
+                                  <span className="ml-2 text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+                                </div>
+                                <div className="flex gap-1">
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="h-8 w-8"
+                                          onClick={() => handlePreviewFile(file)}
+                                        >
+                                          <Eye className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Visualizar</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="h-8 w-8 text-destructive"
+                                          onClick={() => handleDeleteFile(file, 'comprovanteRenda')}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Excluir</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
                         <FormField
                           control={form.control}
                           name="documentos.comprovanteRenda"
@@ -1040,6 +1558,7 @@ const ClienteForm = () => {
                                 <Switch
                                   checked={field.value}
                                   onCheckedChange={field.onChange}
+                                  disabled={uploadedFiles.comprovanteRenda.length === 0}
                                 />
                               </FormControl>
                               <div className="space-y-1 leading-none">
@@ -1054,10 +1573,80 @@ const ClienteForm = () => {
                       
                       <div className="border rounded-lg p-4 space-y-4">
                         <h4 className="font-medium">Contrato Assinado</h4>
-                        <div className="w-full h-36 bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed">
-                          <Upload className="h-8 w-8 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground mt-2">Arraste ou clique para fazer upload</p>
+                        <div className="relative">
+                          <label
+                            htmlFor="contratoUpload"
+                            className={`w-full h-36 bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed cursor-pointer 
+                            ${uploadedFiles.contrato.length > 0 ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : ''}`}
+                          >
+                            <Upload className={`h-8 w-8 ${uploadedFiles.contrato.length > 0 ? 'text-green-500' : 'text-muted-foreground'}`} />
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {uploadedFiles.contrato.length > 0 
+                                ? `${uploadedFiles.contrato.length} ${uploadedFiles.contrato.length === 1 ? 'arquivo enviado' : 'arquivos enviados'}`
+                                : "Arraste ou clique para fazer upload"
+                              }
+                            </p>
+                            <input
+                              id="contratoUpload"
+                              type="file"
+                              className="sr-only"
+                              onChange={(e) => handleFileChange(e, 'contrato')}
+                              accept=".pdf,.jpg,.jpeg,.png"
+                            />
+                          </label>
                         </div>
+                        
+                        {uploadedFiles.contrato.length > 0 && (
+                          <div className="mt-2 space-y-2">
+                            {uploadedFiles.contrato.map((file) => (
+                              <div key={file.id} className="flex items-center justify-between p-2 bg-muted rounded-md">
+                                <div className="flex items-center">
+                                  <FileText className="h-4 w-4 mr-2 text-primary" />
+                                  <span className="text-sm font-medium">{file.name}</span>
+                                  <span className="ml-2 text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+                                </div>
+                                <div className="flex gap-1">
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="h-8 w-8"
+                                          onClick={() => handlePreviewFile(file)}
+                                        >
+                                          <Eye className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Visualizar</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                  
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon" 
+                                          className="h-8 w-8 text-destructive"
+                                          onClick={() => handleDeleteFile(file, 'contrato')}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>Excluir</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
                         <FormField
                           control={form.control}
                           name="documentos.contrato"
@@ -1067,6 +1656,7 @@ const ClienteForm = () => {
                                 <Switch
                                   checked={field.value}
                                   onCheckedChange={field.onChange}
+                                  disabled={uploadedFiles.contrato.length === 0}
                                 />
                               </FormControl>
                               <div className="space-y-1 leading-none">
@@ -1200,7 +1790,7 @@ const ClienteForm = () => {
               type="button"
               variant="outline"
               onClick={handlePrevStep}
-              disabled={step === 1}
+              disabled={step === 1 || isLoading}
               className="flex items-center gap-1"
             >
               <ArrowLeft className="h-4 w-4" /> Anterior
@@ -1210,6 +1800,7 @@ const ClienteForm = () => {
               <Button 
                 type="button" 
                 onClick={handleNextStep}
+                disabled={isLoading}
                 className="flex items-center gap-1"
               >
                 Próximo <ArrowRight className="h-4 w-4" />
@@ -1220,12 +1811,70 @@ const ClienteForm = () => {
                 disabled={isLoading}
                 className="flex items-center gap-1"
               >
-                {isLoading ? "Salvando..." : "Finalizar Cadastro"}
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin mr-2 h-4 w-4 border-2 border-b-transparent rounded-full"></div>
+                    {clienteId ? "Atualizando..." : "Salvando..."}
+                  </>
+                ) : (
+                  clienteId ? "Atualizar Cliente" : "Finalizar Cadastro"
+                )}
               </Button>
             )}
           </CardFooter>
         </Card>
       </form>
+      
+      {/* File Preview Dialog */}
+      <AlertDialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <AlertDialogContent className="max-w-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              {previewFile?.name}
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          
+          <div className="max-h-[70vh] overflow-auto">
+            {previewFile?.preview ? (
+              <AspectRatio ratio={16/9}>
+                <img 
+                  src={previewFile.preview} 
+                  alt={previewFile.name} 
+                  className="rounded-md object-contain w-full h-full"
+                />
+              </AspectRatio>
+            ) : (
+              <div className="bg-muted h-64 flex items-center justify-center rounded-md">
+                <FileText className="h-16 w-16 text-muted-foreground" />
+                <p className="ml-3">Visualização não disponível</p>
+              </div>
+            )}
+          </div>
+          
+          <AlertDialogFooter>
+            <AlertDialogAction>Fechar</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Delete File Dialog */}
+      <AlertDialog open={isDeleteFileDialogOpen} onOpenChange={setIsDeleteFileDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o arquivo "{deleteFileInfo?.file.name}"? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteFile} className="bg-destructive text-destructive-foreground">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Form>
   );
 };
