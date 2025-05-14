@@ -16,12 +16,30 @@ import {
   DollarSign,
   Package,
   Settings,
+  Calculator,
+  FileText,
   LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/components/ui/use-toast';
 
 export const AppSidebar = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Logout bem-sucedido",
+        description: "Você saiu do sistema com sucesso.",
+      });
+      navigate('/login');
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+  };
 
   const menuItems = [
     {
@@ -43,6 +61,16 @@ export const AppSidebar = () => {
       title: "Estoque",
       icon: Package,
       path: "/estoque"
+    },
+    {
+      title: "Pedidos & Orçamentos",
+      icon: FileText,
+      path: "/pedidos"
+    },
+    {
+      title: "Calculadoras",
+      icon: Calculator,
+      path: "/calculadoras"
     },
     {
       title: "Configurações",
@@ -74,7 +102,7 @@ export const AppSidebar = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton className="text-red-500">
+                <SidebarMenuButton className="text-red-500" onClick={handleLogout}>
                   <LogOut className="h-4 w-4" />
                   <span>Sair</span>
                 </SidebarMenuButton>

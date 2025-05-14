@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, DollarSign, Package, AlertTriangle } from 'lucide-react';
+import { Users, DollarSign, Package, AlertTriangle, FileText, Calculator } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const DashboardCard = ({ title, value, icon: Icon, description }: {
   title: string;
@@ -22,11 +23,13 @@ const DashboardCard = ({ title, value, icon: Icon, description }: {
 );
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Bem-vindo ao Dashboard</h1>
+      <h1 className="text-3xl font-bold">Bem-vindo, {user?.email}</h1>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <DashboardCard
           title="Total de Clientes"
           value="124"
@@ -51,28 +54,62 @@ const Dashboard = () => {
           icon={AlertTriangle}
           description="Faturas vencidas"
         />
+        <DashboardCard
+          title="Pedidos Pendentes"
+          value="8"
+          icon={FileText}
+          description="2 aguardando aprovação"
+        />
+        <DashboardCard
+          title="Cálculos Financeiros"
+          value="15"
+          icon={Calculator}
+          description="Realizados esta semana"
+        />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="col-span-2">
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
           <CardHeader>
-            <CardTitle>Próximas Atividades</CardTitle>
+            <CardTitle>Atividades Recentes</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Em breve: Lista de atividades e compromissos
-            </p>
+          <CardContent className="max-h-[300px] overflow-auto">
+            <ul className="space-y-2">
+              <li className="p-3 bg-muted/50 rounded-md">
+                <div className="font-medium">Novo cliente cadastrado</div>
+                <div className="text-sm text-muted-foreground">Hoje, 10:45</div>
+              </li>
+              <li className="p-3 bg-muted/50 rounded-md">
+                <div className="font-medium">Orçamento aprovado - #5123</div>
+                <div className="text-sm text-muted-foreground">Ontem, 15:30</div>
+              </li>
+              <li className="p-3 bg-muted/50 rounded-md">
+                <div className="font-medium">Produto abaixo do estoque mínimo</div>
+                <div className="text-sm text-muted-foreground">Ontem, 09:15</div>
+              </li>
+            </ul>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader>
-            <CardTitle>Notificações</CardTitle>
+            <CardTitle>Tarefas Pendentes</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Em breve: Lista de notificações importantes
-            </p>
+          <CardContent className="max-h-[300px] overflow-auto">
+            <ul className="space-y-2">
+              <li className="p-3 bg-muted/50 rounded-md">
+                <div className="font-medium">Confirmar pagamento do cliente XYZ</div>
+                <div className="text-sm text-muted-foreground">Vence hoje</div>
+              </li>
+              <li className="p-3 bg-muted/50 rounded-md">
+                <div className="font-medium">Atualizar estoque de produtos</div>
+                <div className="text-sm text-muted-foreground">Vence em 2 dias</div>
+              </li>
+              <li className="p-3 bg-muted/50 rounded-md">
+                <div className="font-medium">Revisar orçamentos pendentes</div>
+                <div className="text-sm text-muted-foreground">Vence em 3 dias</div>
+              </li>
+            </ul>
           </CardContent>
         </Card>
       </div>
