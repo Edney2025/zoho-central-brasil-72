@@ -7,7 +7,7 @@ import {
   Users, DollarSign, Package, FileText, Calculator, Settings,
   LayoutDashboard, Receipt, ChartBar, CreditCard, Globe, ShieldCheck,
   BadgePercent, Calendar, MessageCircle, CircleDollarSign,
-  Smartphone, Briefcase, Coins, Wallet, BadgePlus, Graph
+  Smartphone, Briefcase, Coins, Wallet, BadgePlus, TrendingUp
 } from 'lucide-react';
 
 const MenuItem = ({ 
@@ -125,7 +125,7 @@ const Dashboard = () => {
           color: "bg-violet-100 dark:bg-violet-900/30" 
         },
         { 
-          icon: Graph, 
+          icon: TrendingUp, 
           title: "Previsões", 
           description: "IA para projeções financeiras", 
           path: "/previsoes",
