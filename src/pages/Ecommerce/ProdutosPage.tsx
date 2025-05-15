@@ -120,7 +120,7 @@ const ProdutosPage = () => {
                 />
               </div>
               
-              <Select defaultValue="relevancia" className="w-full sm:w-48">
+              <Select defaultValue="relevancia">
                 <SelectTrigger>
                   <SelectValue placeholder="Ordenar por" />
                 </SelectTrigger>

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, UserCircle, LucideLayoutDashboard, FileText } from 'lucide-react';
+import { ShoppingBag, UserCircle, LucideLayoutDashboard, FileText, Calculator } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
