@@ -29,7 +29,8 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       <CardContent className="p-6">
         <div className="flex flex-col items-center text-center space-y-3">
           <div className={`p-4 rounded-full ${color}`}>
-            <Icon className="h-8 w-8 text-primary dark:text-primary" />
+            {/* Make sure Icon is a valid React component */}
+            {Icon && <Icon className="h-8 w-8 text-primary dark:text-primary" />}
           </div>
           <h3 className="font-semibold text-lg">{title}</h3>
           <p className="text-sm text-muted-foreground">{description}</p>

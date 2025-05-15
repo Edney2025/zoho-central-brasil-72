@@ -2,170 +2,173 @@
 import {
   LayoutDashboard,
   Users,
-  CreditCard,
-  ShoppingCart,
+  DollarSign,
   Package,
   FileText,
   Calculator,
   Settings,
-  CalendarClock,
-  MessageSquare,
-  Building2,
-  Landmark,
-  CarFront,
-  Home,
-  Combine,
-  BellRing,
-  Store,
   FileBarChart,
-} from "lucide-react";
+  Clock,
+  CreditCard,
+  Building,
+  CalendarDays,
+  Globe,
+  MessageSquare,
+  Briefcase,
+  BadgeDollarSign,
+  Car,
+  ShieldCheck,
+  Boxes
+} from 'lucide-react';
 
 export const menuSections = [
   {
-    title: "Gestão",
+    title: "Principal",
     items: [
       {
+        icon: LayoutDashboard,
         title: "Dashboard",
-        icon: <LayoutDashboard className="w-5 h-5" />,
-        href: "/dashboard",
         description: "Visão geral do sistema",
+        path: "/dashboard"
       },
       {
+        icon: Users,
         title: "Clientes",
-        icon: <Users className="w-5 h-5" />,
-        href: "/clientes",
-        description: "Gerenciar clientes",
+        description: "Gestão de clientes",
+        path: "/clientes"
       },
       {
+        icon: DollarSign,
         title: "Financeiro",
-        icon: <CreditCard className="w-5 h-5" />,
-        href: "/financeiro",
         description: "Controle financeiro",
+        path: "/financeiro",
+        color: "bg-green-100 dark:bg-green-900/30"
       },
       {
-        title: "Pedidos",
-        icon: <ShoppingCart className="w-5 h-5" />,
-        href: "/pedidos",
-        description: "Gestão de pedidos",
-      },
-      {
-        title: "Orçamentos",
-        icon: <FileBarChart className="w-5 h-5" />,
-        href: "/orcamentos",
-        description: "Gerenciar orçamentos",
-        highlight: true,
-      },
-      {
+        icon: Package,
         title: "Estoque",
-        icon: <Package className="w-5 h-5" />,
-        href: "/estoque",
-        description: "Controle de estoque",
-      },
-      {
-        title: "Contratos",
-        icon: <FileText className="w-5 h-5" />,
-        href: "/contratos",
-        description: "Gerenciar contratos",
-      },
-    ],
+        description: "Gestão de produtos",
+        path: "/estoque",
+        color: "bg-amber-100 dark:bg-amber-900/30"
+      }
+    ]
   },
   {
-    title: "Ferramentas",
+    title: "Vendas",
     items: [
       {
+        icon: FileText,
+        title: "Pedidos",
+        description: "Gestão de pedidos",
+        path: "/pedidos"
+      },
+      {
+        icon: FileText,
+        title: "Orçamentos",
+        description: "Gestão de orçamentos",
+        path: "/orcamentos"
+      },
+      {
+        icon: Calculator,
         title: "Calculadoras",
-        icon: <Calculator className="w-5 h-5" />,
-        href: "/calculadoras",
-        description: "Simuladores financeiros",
+        description: "Ferramentas de cálculo",
+        path: "/calculadoras",
+        color: "bg-blue-100 dark:bg-blue-900/30"
       },
       {
+        icon: FileBarChart,
+        title: "Relatórios",
+        description: "Análise de dados",
+        path: "/relatorios"
+      }
+    ]
+  },
+  {
+    title: "Mais Ferramentas",
+    items: [
+      {
+        icon: Clock,
+        title: "Histórico",
+        description: "Registro de atividades",
+        path: "/previsoes"
+      },
+      {
+        icon: CreditCard,
         title: "Análise de Crédito",
-        icon: <FileBarChart className="w-5 h-5" />,
-        href: "/analise-credito",
-        description: "Avaliar crédito de clientes",
+        description: "Avaliação financeira",
+        path: "/analise-credito"
       },
       {
+        icon: CalendarDays,
         title: "Agendamentos",
-        icon: <CalendarClock className="w-5 h-5" />,
-        href: "/agendamentos",
-        description: "Gerenciar agenda",
+        description: "Gestão de calendário",
+        path: "/agendamentos"
       },
       {
-        title: "Comunicações",
-        icon: <MessageSquare className="w-5 h-5" />,
-        href: "/comunicacoes",
-        description: "Mensagens e notificações",
-      },
-      {
-        title: "Portal do Cliente",
-        icon: <BellRing className="w-5 h-5" />,
-        href: "/portal-config",
-        description: "Configurar portal do cliente",
-      },
-      {
-        title: "E-Commerce",
-        icon: <Store className="w-5 h-5" />,
-        href: "/ecommerce/produtos",
-        description: "Loja virtual",
-      },
-    ],
+        icon: Settings,
+        title: "Configurações",
+        description: "Preferências do sistema",
+        path: "/configuracoes"
+      }
+    ]
   },
   {
     title: "Produtos e Serviços",
     items: [
       {
-        title: "Consulta CNPJ",
-        icon: <Building2 className="w-5 h-5" />,
-        href: "/cnpj",
-        description: "Verificação de empresas",
+        icon: Building,
+        title: "CNPJ",
+        description: "Serviços para empresas",
+        path: "/cnpj"
       },
       {
-        title: "Empréstimos",
-        icon: <CreditCard className="w-5 h-5" />,
-        href: "/emprestimos",
-        description: "Produtos de crédito",
+        icon: Globe,
+        title: "Portal do Cliente",
+        description: "Configurações do portal",
+        path: "/portal-config"
       },
       {
-        title: "Financiamentos",
-        icon: <Landmark className="w-5 h-5" />,
-        href: "/financiamentos",
-        description: "Opções de financiamento",
-      },
-      {
-        title: "Financiamento Veículos",
-        icon: <CarFront className="w-5 h-5" />,
-        href: "/calculadoras/financiamento-veiculos",
-        description: "Simulações para veículos",
-      },
-      {
-        title: "Financiamento Imóveis",
-        icon: <Home className="w-5 h-5" />,
-        href: "/calculadoras/financiamento-imoveis",
-        description: "Simulações para imóveis",
-      },
-      {
-        title: "Outros Produtos",
-        icon: <Combine className="w-5 h-5" />,
-        href: "/outros-produtos",
-        description: "Produtos adicionais",
-      },
-    ],
+        icon: MessageSquare,
+        title: "Comunicações",
+        description: "Gestão de comunicações",
+        path: "/comunicacoes"
+      }
+    ]
   },
   {
-    title: "Sistema",
+    title: "Financeiro",
     items: [
       {
-        title: "Configurações",
-        icon: <Settings className="w-5 h-5" />,
-        href: "/configuracoes",
-        description: "Configurações do sistema",
+        icon: Briefcase,
+        title: "Contratos",
+        description: "Gestão de contratos",
+        path: "/contratos"
       },
       {
-        title: "Relatórios",
-        icon: <FileBarChart className="w-5 h-5" />,
-        href: "/relatorios",
-        description: "Relatórios gerenciais",
+        icon: BadgeDollarSign,
+        title: "Empréstimos",
+        description: "Gestão de empréstimos",
+        path: "/emprestimos",
+        color: "bg-emerald-100 dark:bg-emerald-900/30"
       },
-    ],
-  },
+      {
+        icon: Car,
+        title: "Financiamentos",
+        description: "Gestão de financiamentos",
+        path: "/financiamentos"
+      },
+      {
+        icon: ShieldCheck,
+        title: "Garantias",
+        description: "Gestão de garantias",
+        path: "/garantias"
+      },
+      {
+        icon: Boxes,
+        title: "Outros Produtos",
+        description: "Produtos adicionais",
+        path: "/outros-produtos"
+      }
+    ]
+  }
 ];
