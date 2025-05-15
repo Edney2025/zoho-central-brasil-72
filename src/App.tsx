@@ -14,6 +14,7 @@ import ClientesPage from "./pages/Clientes/ClientesPage";
 import FinanceiroPage from "./pages/Financeiro/FinanceiroPage";
 import EstoquePage from "./pages/Estoque/EstoquePage";
 import PedidosPage from "./pages/Pedidos/PedidosPage";
+import OrcamentoDetalhe from "./pages/Pedidos/OrcamentoDetalhe";
 import CalculadorasPage from "./pages/Calculadoras/CalculadorasPage";
 import ConfiguracoesPage from "./pages/Configuracoes/ConfiguracoesPage";
 import ContratosPage from "./pages/Contratos/ContratosPage";
@@ -90,6 +91,7 @@ const App = () => {
                   <Route path="financeiro" element={<FinanceiroPage />} />
                   <Route path="estoque" element={<EstoquePage />} />
                   <Route path="pedidos" element={<PedidosPage />} />
+                  <Route path="pedidos/orcamento/:id" element={<OrcamentoDetalhe />} />
                   
                   {/* E-commerce routes */}
                   <Route path="ecommerce">
@@ -136,6 +138,7 @@ const App = () => {
                   <Route path="dashboard" element={<DashboardPage />} />
                   <Route path="pedidos" element={<PedidosPortalPage />} />
                   <Route path="orcamentos" element={<OrcamentosPage />} />
+                  <Route path="orcamento/:id" element={<OrcamentoDetalhe />} />
                   <Route path="suporte" element={<SuportePage />} />
                   <Route path="faq" element={<FAQPage />} />
                   <Route path="profile" element={<ProfilePage />} />

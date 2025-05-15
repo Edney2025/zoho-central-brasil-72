@@ -1,190 +1,76 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Plus, FileText, Check, X, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Search, PlusCircle } from 'lucide-react';
+import OrcamentosTable from './components/OrcamentosTable';
+import { orcamentosMock } from './data/orcamentos-mock';
 
-const pedidosExemplo = [
-  { 
-    id: 'PED001', 
-    cliente: 'Empresa ABC Ltda', 
-    valor: 'R$ 12.500,00', 
-    data: '15/05/2023', 
-    status: 'aprovado' 
-  },
-  { 
-    id: 'PED002', 
-    cliente: 'João Silva', 
-    valor: 'R$ 5.800,00', 
-    data: '18/05/2023', 
-    status: 'pendente' 
-  },
-  { 
-    id: 'PED003', 
-    cliente: 'Maria Souza', 
-    valor: 'R$ 8.200,00', 
-    data: '20/05/2023', 
-    status: 'reprovado' 
-  },
-  { 
-    id: 'PED004', 
-    cliente: 'Comércio XYZ', 
-    valor: 'R$ 15.300,00', 
-    data: '22/05/2023', 
-    status: 'pendente' 
-  },
-  { 
-    id: 'PED005', 
-    cliente: 'Carlos Oliveira', 
-    valor: 'R$ 3.700,00', 
-    data: '25/05/2023', 
-    status: 'aprovado' 
-  },
-];
-
-const orcamentosExemplo = [
-  { 
-    id: 'ORC001', 
-    cliente: 'Empresa XYZ Inc', 
-    valor: 'R$ 22.500,00', 
-    data: '10/05/2023', 
-    validade: '10/06/2023', 
-    status: 'pendente' 
-  },
-  { 
-    id: 'ORC002', 
-    cliente: 'Pedro Almeida', 
-    valor: 'R$ 7.800,00', 
-    data: '12/05/2023', 
-    validade: '12/06/2023', 
-    status: 'aprovado' 
-  },
-  { 
-    id: 'ORC003', 
-    cliente: 'Ana Ferreira', 
-    valor: 'R$ 9.200,00', 
-    data: '14/05/2023', 
-    validade: '14/06/2023', 
-    status: 'reprovado' 
-  },
-];
-
-const StatusBadge = ({ status }: { status: string }) => {
-  switch(status) {
-    case 'aprovado':
-      return <Badge className="bg-green-500"><Check className="mr-1 h-3 w-3" /> Aprovado</Badge>;
-    case 'reprovado':
-      return <Badge className="bg-red-500"><X className="mr-1 h-3 w-3" /> Reprovado</Badge>;
-    default:
-      return <Badge className="bg-yellow-500"><Clock className="mr-1 h-3 w-3" /> Pendente</Badge>;
-  }
-};
-
-const PedidosPage = () => {
+const PedidosPage: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('orcamentos');
+  
+  const filteredOrcamentos = orcamentosMock.filter(orcamento => 
+    orcamento.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    orcamento.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Pedidos & Orçamentos</h1>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Plus className="mr-2 h-4 w-4" /> Novo Orçamento
-          </Button>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Novo Pedido
-          </Button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold">Pedidos e Orçamentos</h1>
+        <Button>
+          <PlusCircle className="mr-2 h-4 w-4" /> Novo Orçamento
+        </Button>
+      </div>
+      
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        <div className="relative w-full">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por cliente, número..."
+            className="pl-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
-
-      <Tabs defaultValue="pedidos" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
+      
+      <Tabs defaultValue="orcamentos" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
           <TabsTrigger value="orcamentos">Orçamentos</TabsTrigger>
+          <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
+          <TabsTrigger value="vendas">Vendas Finalizadas</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="pedidos">
+        <TabsContent value="orcamentos" className="pt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Lista de Pedidos</CardTitle>
+              <CardTitle>Orçamentos</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border overflow-hidden">
-                <table className="min-w-full divide-y divide-border">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cliente</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Valor</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Data</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-background divide-y divide-border">
-                    {pedidosExemplo.map((pedido) => (
-                      <tr key={pedido.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{pedido.id}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{pedido.cliente}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{pedido.valor}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{pedido.data}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <StatusBadge status={pedido.status} />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <Button variant="ghost" size="sm">
-                            <FileText className="h-4 w-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <OrcamentosTable orcamentos={filteredOrcamentos} />
             </CardContent>
           </Card>
         </TabsContent>
-        
-        <TabsContent value="orcamentos">
+        <TabsContent value="pedidos" className="pt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Lista de Orçamentos</CardTitle>
+              <CardTitle>Pedidos</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="rounded-md border overflow-hidden">
-                <table className="min-w-full divide-y divide-border">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cliente</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Valor</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Data</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Validade</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-background divide-y divide-border">
-                    {orcamentosExemplo.map((orcamento) => (
-                      <tr key={orcamento.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{orcamento.id}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{orcamento.cliente}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{orcamento.valor}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{orcamento.data}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">{orcamento.validade}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <StatusBadge status={orcamento.status} />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <Button variant="ghost" size="sm">
-                            <FileText className="h-4 w-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <p className="text-muted-foreground">Não há pedidos disponíveis.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="vendas" className="pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Vendas Finalizadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Não há vendas finalizadas disponíveis.</p>
             </CardContent>
           </Card>
         </TabsContent>

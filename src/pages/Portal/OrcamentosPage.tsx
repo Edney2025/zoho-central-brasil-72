@@ -1,12 +1,11 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from '@/components/ui/use-toast';
 import {
   Search,
   Download,
@@ -17,7 +16,8 @@ import {
   AlertCircle,
   Check,
   X,
-  Calendar
+  Calendar,
+  Eye
 } from 'lucide-react';
 
 // Mock data for the quotes
@@ -81,9 +81,8 @@ const orcamentosExemplo = [
 ];
 
 const OrcamentosPage: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedOrcamento, setSelectedOrcamento] = useState<typeof orcamentosExemplo[0] | null>(null);
-  const [openDetails, setOpenDetails] = useState(false);
   
   const filteredOrcamentos = orcamentosExemplo.filter(orcamento => 
     orcamento.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -105,29 +104,10 @@ const OrcamentosPage: React.FC = () => {
     }
   };
   
-  const viewOrcamentoDetails = (orcamento: typeof orcamentosExemplo[0]) => {
-    setSelectedOrcamento(orcamento);
-    setOpenDetails(true);
+  const viewOrcamentoDetails = (id: string) => {
+    navigate(`/portal/orcamento/${id}`);
   };
 
-  const handleApproveQuote = () => {
-    // In a real application, this would make an API call to update the quote status
-    toast({
-      title: "Orçamento aprovado",
-      description: "Em breve nossa equipe entrará em contato para os próximos passos.",
-    });
-    setOpenDetails(false);
-  };
-
-  const handleRejectQuote = () => {
-    // In a real application, this would make an API call to update the quote status
-    toast({
-      title: "Orçamento reprovado",
-      description: "Você pode solicitar um novo orçamento a qualquer momento.",
-    });
-    setOpenDetails(false);
-  };
-  
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -174,9 +154,9 @@ const OrcamentosPage: React.FC = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => viewOrcamentoDetails(orcamento)}
+                          onClick={() => viewOrcamentoDetails(orcamento.id)}
                         >
-                          <FileText className="h-4 w-4" />
+                          <Eye className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon">
                           <Download className="h-4 w-4" />
@@ -196,121 +176,6 @@ const OrcamentosPage: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-      
-      {/* Quote Details Dialog */}
-      <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Detalhes do Orçamento {selectedOrcamento?.id}</DialogTitle>
-          </DialogHeader>
-          
-          {selectedOrcamento && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Informações do Orçamento</h3>
-                  <div className="bg-muted/30 p-3 rounded-md space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Número:</span>
-                      <span className="text-sm font-medium">{selectedOrcamento.id}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Data:</span>
-                      <span className="text-sm font-medium">{selectedOrcamento.data}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Valor Total:</span>
-                      <span className="text-sm font-medium">{selectedOrcamento.valor}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Condições de Pagamento:</span>
-                      <span className="text-sm font-medium">{selectedOrcamento.condicoesPagamento}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Status do Orçamento</h3>
-                  <div className="bg-muted/30 p-3 rounded-md space-y-4">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
-                        <span className="text-sm mr-2">Status:</span>
-                        {getStatusBadge(selectedOrcamento.status)}
-                      </div>
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1 text-muted-foreground" />
-                        <span className="text-sm">Válido até: {selectedOrcamento.validade}</span>
-                      </div>
-                    </div>
-                    
-                    {selectedOrcamento.status === 'pendente' && (
-                      <div className="bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-md flex items-center">
-                        <AlertCircle className="h-5 w-5 mr-2" />
-                        <div>
-                          <p className="text-sm font-medium">Aguardando sua aprovação</p>
-                          <p className="text-xs">Você pode aprovar ou rejeitar este orçamento.</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Itens do Orçamento</h3>
-                <div className="bg-muted/30 rounded-md overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Item</TableHead>
-                        <TableHead className="text-center">Quantidade</TableHead>
-                        <TableHead className="text-right">Valor</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {selectedOrcamento.items.map((item, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{item.nome}</TableCell>
-                          <TableCell className="text-center">{item.quantidade}</TableCell>
-                          <TableCell className="text-right">{item.valor}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Observações</h3>
-                <div className="bg-muted/30 p-3 rounded-md">
-                  <p className="text-sm">{selectedOrcamento.observacoes}</p>
-                </div>
-              </div>
-              
-              <div className="flex justify-between">
-                <Button variant="outline">
-                  <Download className="mr-2 h-4 w-4" /> Baixar PDF
-                </Button>
-                
-                {selectedOrcamento.status === 'pendente' ? (
-                  <div className="space-x-2">
-                    <Button variant="outline" onClick={handleRejectQuote}>
-                      <ThumbsDown className="mr-2 h-4 w-4" /> Rejeitar
-                    </Button>
-                    <Button onClick={handleApproveQuote}>
-                      <ThumbsUp className="mr-2 h-4 w-4" /> Aprovar
-                    </Button>
-                  </div>
-                ) : (
-                  <Button onClick={() => setOpenDetails(false)}>
-                    Fechar
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
