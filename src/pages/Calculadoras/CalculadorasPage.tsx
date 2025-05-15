@@ -1,73 +1,193 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calculator, Bike, Car, Battery, ShoppingCart, Box } from 'lucide-react';
-
-const calculadoras = [
-  { id: 'moto-eletrica', nome: 'Moto Elétrica', icon: Calculator },
-  { id: 'bicicleta-nova', nome: 'Bicicleta Elétrica Nova', icon: Bike },
-  { id: 'bicicleta-usada', nome: 'Bicicleta Elétrica Usada', icon: Bike },
-  { id: 'patinete', nome: 'Patinete Elétrico', icon: Bike },
-  { id: 'baterias', nome: 'Baterias para Bicicleta', icon: Battery },
-  { id: 'automoveis', nome: 'Financiamento de Automóveis e Motos', icon: Car },
-  { id: 'produtos-novos', nome: 'Financiamento de Produtos Novos', icon: ShoppingCart },
-  { id: 'produtos-usados', nome: 'Financiamento de Produtos Usados', icon: Box }
-];
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from '@/components/ui/separator';
+import { AlertTriangle, Calculator, Filter, Search } from 'lucide-react';
+import { CalculadorasList } from '@/features/calculadoras/components/CalculadorasList';
+import { SimulacoesLista } from '@/features/calculadoras/components/SimulacoesLista';
+import { ComparacaoSimulacoes } from '@/features/calculadoras/components/ComparacaoSimulacoes';
+import { useSimulacoes } from '@/features/calculadoras/hooks/useSimulacoes';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const CalculadorasPage = () => {
-  const [calculadoraAtiva, setCalculadoraAtiva] = useState('moto-eletrica');
-
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  
+  const { 
+    simulacoes, 
+    selectedSimulacoes, 
+    loading,
+    toggleSelectSimulacao, 
+    removeSimulacao, 
+    shareSimulacao,
+    createOrcamentoFromSimulacao,
+    clearSelectedSimulacoes,
+    getSelectedSimulacoes
+  } = useSimulacoes();
+  
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+  
+  const handleFilterByCategory = (category: string) => {
+    setSelectedCategory(category === selectedCategory ? '' : category);
+  };
+  
+  const selectedSimulacoesData = getSelectedSimulacoes();
+  
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Calculadoras Financeiras</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-1 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Selecione uma Calculadora</CardTitle>
-              <CardDescription>8 calculadoras disponíveis</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <nav className="flex flex-col">
-                {calculadoras.map((calc) => (
-                  <button
-                    key={calc.id}
-                    className={`flex items-center gap-3 px-4 py-3 text-start hover:bg-accent ${
-                      calculadoraAtiva === calc.id ? 'bg-accent/50 font-medium' : ''
-                    }`}
-                    onClick={() => setCalculadoraAtiva(calc.id)}
-                  >
-                    <calc.icon className="h-5 w-5" />
-                    <span>{calc.nome}</span>
-                  </button>
-                ))}
-              </nav>
-            </CardContent>
-          </Card>
+      <div className="flex items-baseline justify-between">
+        <h1 className="text-3xl font-bold">Calculadoras Financeiras</h1>
+        <div className="text-sm text-muted-foreground">
+          Total de {simulacoes.length} simulação(ões) salva(s)
         </div>
-
-        <div className="md:col-span-3">
+      </div>
+      
+      <Tabs defaultValue="calculadoras">
+        <TabsList className="mb-4">
+          <TabsTrigger value="calculadoras">
+            <Calculator className="h-4 w-4 mr-2" />
+            Calculadoras
+          </TabsTrigger>
+          <TabsTrigger value="simulacoes">
+            <Filter className="h-4 w-4 mr-2" />
+            Simulações Salvas
+          </TabsTrigger>
+          <TabsTrigger value="comparacao">
+            <Search className="h-4 w-4 mr-2" />
+            Comparar ({selectedSimulacoesData.length})
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="calculadoras">
           <Card>
             <CardHeader>
-              <CardTitle>
-                {calculadoras.find((c) => c.id === calculadoraAtiva)?.nome}
-              </CardTitle>
+              <CardTitle>Escolha uma Calculadora</CardTitle>
               <CardDescription>
-                Preencha os campos abaixo para calcular o financiamento
+                Selecione uma calculadora para realizar simulações financeiras
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="p-6 text-center">
-                <p className="text-muted-foreground">
-                  Implementação da calculadora {calculadoraAtiva} virá aqui.
-                </p>
+              <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <Input 
+                  placeholder="Buscar calculadoras..." 
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className="md:max-w-xs"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button 
+                    variant={selectedCategory === 'produtos' ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleFilterByCategory('produtos')}
+                  >
+                    Produtos
+                  </Button>
+                  <Button 
+                    variant={selectedCategory === 'financiamentos' ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleFilterByCategory('financiamentos')}
+                  >
+                    Financiamentos
+                  </Button>
+                  <Button 
+                    variant={selectedCategory === 'emprestimos' ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleFilterByCategory('emprestimos')}
+                  >
+                    Empréstimos
+                  </Button>
+                  <Button 
+                    variant={selectedCategory === 'transportes' ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleFilterByCategory('transportes')}
+                  >
+                    Transportes
+                  </Button>
+                  <Button 
+                    variant={selectedCategory === 'servicos' ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleFilterByCategory('servicos')}
+                  >
+                    Serviços
+                  </Button>
+                  <Button 
+                    variant={selectedCategory === 'garantias' ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleFilterByCategory('garantias')}
+                  >
+                    Garantias
+                  </Button>
+                  <Button 
+                    variant={selectedCategory === 'outros' ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleFilterByCategory('outros')}
+                  >
+                    Outros
+                  </Button>
+                </div>
               </div>
+              
+              <Separator className="my-4" />
+              
+              <CalculadorasList 
+                filter={selectedCategory || searchTerm} 
+              />
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+        
+        <TabsContent value="simulacoes">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex justify-between">
+                <div>Simulações Salvas</div>
+                {selectedSimulacoes.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={clearSelectedSimulacoes}>
+                    Limpar seleção ({selectedSimulacoes.length})
+                  </Button>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Visualize, compare e gerencie suas simulações salvas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SimulacoesLista 
+                simulacoes={simulacoes}
+                selectedIds={selectedSimulacoes}
+                onSelect={toggleSelectSimulacao}
+                onShare={shareSimulacao}
+                onCreateOrcamento={createOrcamentoFromSimulacao}
+                onRemove={removeSimulacao}
+              />
+              
+              {simulacoes.length > 0 && selectedSimulacoes.length === 0 && (
+                <Alert className="mt-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Selecione simulações para comparar</AlertTitle>
+                  <AlertDescription>
+                    Marque as simulações que deseja comparar e vá para a aba "Comparar".
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="comparacao">
+          <ComparacaoSimulacoes 
+            simulacoes={selectedSimulacoesData}
+            onRemove={toggleSelectSimulacao}
+            onShare={shareSimulacao}
+            onCreateOrcamento={createOrcamentoFromSimulacao}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

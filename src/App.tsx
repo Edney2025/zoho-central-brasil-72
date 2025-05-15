@@ -14,6 +14,7 @@ import FinanceiroPage from "./pages/Financeiro/FinanceiroPage";
 import EstoquePage from "./pages/Estoque/EstoquePage";
 import PedidosPage from "./pages/Pedidos/PedidosPage";
 import CalculadorasPage from "./pages/Calculadoras/CalculadorasPage";
+import ProdutosNovosCalculadora from "./features/calculadoras/pages/ProdutosNovosCalculadora";
 import ConfiguracoesPage from "./pages/Configuracoes/ConfiguracoesPage";
 import ContratosPage from "./pages/Contratos/ContratosPage";
 import RelatoriosPage from "./pages/Relatorios/RelatoriosPage";
@@ -64,6 +65,7 @@ const App = () => {
                   <Route path="estoque" element={<EstoquePage />} />
                   <Route path="pedidos" element={<PedidosPage />} />
                   <Route path="calculadoras" element={<CalculadorasPage />} />
+                  <Route path="calculadoras/produtos-novos" element={<ProdutosNovosCalculadora />} />
                   <Route path="configuracoes/*" element={<ConfiguracoesPage />} />
                   <Route path="contratos" element={<ContratosPage />} />
                   <Route path="relatorios" element={<RelatoriosPage />} />
