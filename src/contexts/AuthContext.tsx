@@ -58,7 +58,7 @@ export function AuthProvider({ children, supabaseClient }: { children: React.Rea
       // Se não estiverem armazenados, armazena o email e senha do admin
       if (!storedEmail || !storedPassword) {
         localStorage.setItem('admin_email', 'admin@gmail.com');
-        localStorage.setItem('admin_password', '68366836');
+        localStorage.setItem('admin_password', '123456789');
       }
     }
 
