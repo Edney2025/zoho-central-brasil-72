@@ -10,8 +10,10 @@ import { FinancialSummary } from './components/FinancialSummary';
 import { OrcamentosSection } from './components/OrcamentosSection';
 import { DashboardCharts } from './components/DashboardCharts';
 import { ActivityTabs } from './components/ActivityTabs';
+import { RecentAdsSection } from './components/RecentAdsSection';
 import { vendasMensais, desempenhoCategorias } from './data/dashboard-data';
 import { orcamentosMock, resumoFinanceiroMock } from './data/orcamentos-mock';
+import { recentAdsMock } from './data/recent-ads-mock';
 
 const DashboardAnalytics = () => {
   const { user } = useAuth();
@@ -49,6 +51,9 @@ const DashboardAnalytics = () => {
       <FinancialSummary resumoFinanceiro={resumoFinanceiroMock} />
       
       <OrcamentosSection orcamentos={orcamentosMock} />
+
+      {/* Recent Ads Section */}
+      <RecentAdsSection recentAds={recentAdsMock} />
 
       {/* Gerenciar Meus Anúncios Button */}
       <div className="flex justify-end">
