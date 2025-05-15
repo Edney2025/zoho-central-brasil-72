@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -31,7 +30,7 @@ import {
 } from '@/components/ui/card';
 import { BaseCalculadora } from '../components/BaseCalculadora';
 import { getCalculadoraConfig } from '../config/calculadoras';
-import { RefreshCcw, ArrowsLeftRight, AlertTriangle } from 'lucide-react';
+import { RefreshCcw, ArrowLeftRight, AlertTriangle } from 'lucide-react';
 
 // Define o esquema do formulário com Zod
 const formSchema = z.object({
@@ -197,7 +196,7 @@ const ConversaoMoedasCalculadora: React.FC = () => {
               <p className="text-sm text-muted-foreground">De {nomesMoedas[resultado.moedaOrigem as keyof typeof nomesMoedas]} ({resultado.moedaOrigem})</p>
               <p className="text-2xl font-bold">{formatarMoeda(resultado.valorOriginal, resultado.moedaOrigem)}</p>
             </div>
-            <ArrowsLeftRight className="hidden md:block h-6 w-6 text-muted-foreground mx-4" />
+            <ArrowLeftRight className="hidden md:block h-6 w-6 text-muted-foreground mx-4" />
             <div className="mt-2 md:mt-0 flex items-center md:text-right">
               <p className="text-sm text-muted-foreground">Para {nomesMoedas[resultado.moedaDestino as keyof typeof nomesMoedas]} ({resultado.moedaDestino})</p>
               <p className="text-2xl font-bold text-primary">{formatarMoeda(resultado.valorConvertido, resultado.moedaDestino)}</p>
@@ -300,7 +299,7 @@ const ConversaoMoedasCalculadora: React.FC = () => {
                     className="mt-6"
                     onClick={inverterMoedas}
                   >
-                    <ArrowsLeftRight className="h-4 w-4" />
+                    <ArrowLeftRight className="h-4 w-4" />
                   </Button>
                   
                   <FormField
