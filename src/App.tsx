@@ -56,6 +56,7 @@ import ProdutosPage from "./pages/Ecommerce/ProdutosPage";
 import ProdutoDetalhe from "./pages/Ecommerce/ProdutoDetalhe";
 import CarrinhoPage from "./pages/Ecommerce/CarrinhoPage";
 import AnunciarPage from "./pages/Ecommerce/AnunciarPage";
+import MeusAnunciosPage from "./pages/Ecommerce/MeusAnunciosPage";
 
 import { AuthProvider, supabase } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -96,6 +97,8 @@ const App = () => {
                     <Route path="produto/:id" element={<ProdutoDetalhe />} />
                     <Route path="carrinho" element={<CarrinhoPage />} />
                     <Route path="anunciar" element={<AnunciarPage />} />
+                    <Route path="meus-anuncios" element={<MeusAnunciosPage />} />
+                    <Route path="editar/:id" element={<AnunciarPage />} />
                   </Route>
                   
                   {/* Calculadoras routes */}
@@ -136,6 +139,7 @@ const App = () => {
                   <Route path="suporte" element={<SuportePage />} />
                   <Route path="faq" element={<FAQPage />} />
                   <Route path="profile" element={<ProfilePage />} />
+                  <Route path="anunciar" element={<AnunciarPage />} />
                 </Route>
                 
                 {/* Redirect all unknown routes */}

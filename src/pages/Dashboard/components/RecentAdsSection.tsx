@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Edit, MoreHorizontal, ExternalLink } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { RecentAdsLoadingSkeleton } from './RecentAdsLoadingSkeleton';
 
 interface RecentAd {
   id: string;
@@ -20,9 +21,10 @@ interface RecentAd {
 
 interface RecentAdsSectionProps {
   recentAds: RecentAd[];
+  isLoading?: boolean;
 }
 
-export const RecentAdsSection = ({ recentAds }: RecentAdsSectionProps) => {
+export const RecentAdsSection = ({ recentAds, isLoading = false }: RecentAdsSectionProps) => {
   const navigate = useNavigate();
   
   const getStatusBadge = (status: string) => {
@@ -60,49 +62,64 @@ export const RecentAdsSection = ({ recentAds }: RecentAdsSectionProps) => {
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {recentAds.map((ad) => (
-          <Card 
-            key={ad.id} 
-            className="cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => handleViewAd(ad.id)}
-          >
-            <CardHeader className="p-0">
-              <AspectRatio ratio={4/3}>
-                <img 
-                  src={ad.image} 
-                  alt={ad.title}
-                  className="w-full h-full object-cover rounded-t-lg"
-                />
-              </AspectRatio>
-              <div className="absolute top-2 right-2">
-                {getStatusBadge(ad.status)}
-              </div>
-            </CardHeader>
-            <CardContent className="p-4">
-              <CardTitle className="text-lg truncate">{ad.title}</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">{ad.category}</p>
-              <div className="flex justify-between items-center mt-2">
-                <span className="font-bold">R$ {ad.price.toFixed(2).replace('.', ',')}</span>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Eye className="h-3 w-3 mr-1" />
-                  {ad.views}
+        {isLoading ? (
+          <RecentAdsLoadingSkeleton />
+        ) : recentAds.length > 0 ? (
+          recentAds.map((ad) => (
+            <Card 
+              key={ad.id} 
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleViewAd(ad.id)}
+            >
+              <CardHeader className="p-0">
+                <AspectRatio ratio={4/3}>
+                  <img 
+                    src={ad.image} 
+                    alt={ad.title}
+                    className="w-full h-full object-cover rounded-t-lg"
+                  />
+                </AspectRatio>
+                <div className="absolute top-2 right-2">
+                  {getStatusBadge(ad.status)}
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-between py-2 px-4 border-t">
-              <span className="text-xs text-muted-foreground">
-                Criado em {ad.createdAt}
-              </span>
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                onClick={(e) => handleEditAd(e, ad.id)}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+              </CardHeader>
+              <CardContent className="p-4">
+                <CardTitle className="text-lg truncate">{ad.title}</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">{ad.category}</p>
+                <div className="flex justify-between items-center mt-2">
+                  <span className="font-bold">R$ {ad.price.toFixed(2).replace('.', ',')}</span>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Eye className="h-3 w-3 mr-1" />
+                    {ad.views}
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between py-2 px-4 border-t">
+                <span className="text-xs text-muted-foreground">
+                  Criado em {ad.createdAt}
+                </span>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={(e) => handleEditAd(e, ad.id)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full text-center py-8">
+            <p className="text-muted-foreground">Nenhum anúncio encontrado.</p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => navigate('/ecommerce/anunciar')}
+            >
+              Criar Anúncio
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

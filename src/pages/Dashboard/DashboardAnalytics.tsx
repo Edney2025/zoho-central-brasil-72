@@ -136,7 +136,9 @@ const DashboardAnalytics = () => {
       setFilteredDesempenhoCategorias(
         desempenhoCategorias.map(item => ({
           ...item,
-          valor: Math.floor(item.valor * (filteredSales.length / vendasMensais.length))
+          // Aqui está a correção: usamos as propriedades 'atual' e 'anterior' em vez de 'valor'
+          atual: Math.floor(item.atual * (filteredSales.length / vendasMensais.length)),
+          anterior: Math.floor(item.anterior * (filteredSales.length / vendasMensais.length))
         }))
       );
     } else {
