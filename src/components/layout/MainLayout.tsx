@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 
 export const MainLayout = () => {
-  const { loading } = useAuth();
+  const { isLoading } = useAuth();
   
-  if (loading) {
+  if (isLoading) {
     return <div className="flex items-center justify-center h-screen">Carregando...</div>;
   }
   

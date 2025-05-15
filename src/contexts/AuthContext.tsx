@@ -1,6 +1,7 @@
+
 import { createContext, useContext, useState, useEffect } from 'react';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
-import { useRouter } from 'next/router';
+import { useNavigate } from 'react-router-dom';
 
 // Define the AuthContext type
 interface AuthContextType {
@@ -9,6 +10,9 @@ interface AuthContextType {
   user: Session['user'] | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  isCustomer: boolean;
 }
 
 // Create the AuthContext with a default value
@@ -18,6 +22,9 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isLoading: true,
   signOut: async () => {},
+  signIn: async () => ({ error: null }),
+  signUp: async () => ({ error: null }),
+  isCustomer: false,
 });
 
 // AuthProvider component
@@ -25,7 +32,8 @@ export function AuthProvider({ children, supabaseClient }: { children: React.Rea
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<Session['user'] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const [isCustomer, setIsCustomer] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsLoading(true);
@@ -36,41 +44,81 @@ export function AuthProvider({ children, supabaseClient }: { children: React.Rea
       setIsLoading(false);
     });
 
-    supabaseClient.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user || null);
     });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [supabaseClient]);
 
   useEffect(() => {
     if (user) {
       // Check if customer data exists
-      supabase
-        .from('customers' as any)
+      supabaseClient
+        .from('customers')
         .select('*')
         .eq('user_id', user.id)
         .single()
         .then(({ data, error }) => {
           if (error && error.code === 'PGRST116') {
             // No customer data exists, so create it
-            supabase.from('customers').insert([
+            supabaseClient.from('customers').insert([
               {
                 user_id: user.id,
                 email: user.email,
               },
             ]);
+            setIsCustomer(false);
+          } else if (data) {
+            setIsCustomer(true);
           }
         });
     }
-  }, [user]);
+  }, [user, supabaseClient]);
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const signUp = async (email: string, password: string) => {
+    try {
+      const { error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
 
   const signOut = async () => {
     await supabaseClient.auth.signOut();
     setUser(null);
-    router.push('/login');
+    navigate('/portal/login');
   };
 
-  const value: AuthContextType = { supabaseClient, session, user, isLoading, signOut };
+  const value: AuthContextType = { 
+    supabaseClient, 
+    session, 
+    user, 
+    isLoading, 
+    signOut,
+    signIn,
+    signUp,
+    isCustomer
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -80,7 +128,8 @@ export const useAuth = () => {
   return useContext(AuthContext);
 };
 
+// Create a supabase client
 export const supabase = new SupabaseClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  import.meta.env.VITE_SUPABASE_URL || '',
+  import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 );

@@ -19,24 +19,19 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export const PortalLayout = () => {
-  const { user, loading, signOut, isCustomer } = useAuth();
+  const { user, isLoading, signOut, isCustomer } = useAuth();
   const navigate = useNavigate();
   
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isLoading && !user) {
       navigate('/portal/login');
-    } else if (!loading && user && !isCustomer) {
+    } else if (!isLoading && user && !isCustomer) {
       // If user is logged in but not a customer, redirect to profile update
       navigate('/portal/profile');
     }
-  }, [user, loading, navigate, isCustomer]);
+  }, [user, isLoading, navigate, isCustomer]);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/portal/login');
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
         <Skeleton className="h-12 w-12 rounded-full" />
@@ -44,6 +39,11 @@ export const PortalLayout = () => {
       </div>
     );
   }
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/portal/login');
+  };
 
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/portal/dashboard' },

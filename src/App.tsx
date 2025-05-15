@@ -39,7 +39,7 @@ import SuportePage from "./pages/Portal/SuportePage";
 import FAQPage from "./pages/Portal/FAQPage";
 import ProfilePage from "./pages/Portal/ProfilePage";
 
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, supabase } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
 // Create a client
@@ -49,11 +49,11 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+        <BrowserRouter>
+          <AuthProvider supabaseClient={supabase}>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
               <Routes>
                 {/* Admin/Staff Routes */}
                 <Route path="/" element={<MainLayout />}>
@@ -96,9 +96,9 @@ const App = () => {
                 {/* Redirect all unknown routes */}
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </AuthProvider>
+            </TooltipProvider>
+          </AuthProvider>
+        </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
   );
