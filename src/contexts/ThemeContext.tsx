@@ -10,20 +10,28 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    return savedTheme || 'light';
+    // When running in browser environment, check localStorage
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme') as Theme;
+      return savedTheme || 'light';
+    }
+    // Default for SSR or when localStorage is not available
+    return 'light';
   });
 
   useEffect(() => {
-    localStorage.setItem('theme', theme);
+    // Only run in browser environment
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme', theme);
     
-    // Remove previous theme classes
-    document.documentElement.classList.remove('light', 'dark', 'corporate', 'elegant');
-    
-    // Add new theme class
-    document.documentElement.classList.add(theme);
+      // Remove previous theme classes
+      document.documentElement.classList.remove('light', 'dark', 'corporate', 'elegant');
+      
+      // Add new theme class
+      document.documentElement.classList.add(theme);
+    }
   }, [theme]);
 
   return (
