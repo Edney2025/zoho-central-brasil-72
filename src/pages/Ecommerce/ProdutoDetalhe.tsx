@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,9 +14,13 @@ import {
   Truck,
   Clock,
   Shield,
-  MessageCircle
+  MessageCircle,
+  Bookmark
 } from 'lucide-react';
 import { produtosNovos, produtosUsados } from './data/produtos';
+import { toast } from '@/components/ui/use-toast';
+import AvaliacaoEstrelas from '@/components/produtos/AvaliacaoEstrelas';
+import ComentariosAvaliacoes from '@/components/produtos/ComentariosAvaliacoes';
 
 const ProdutoDetalhe = () => {
   const { id } = useParams();
@@ -48,7 +51,21 @@ const ProdutoDetalhe = () => {
   
   const handleAddToCart = () => {
     // Lógica para adicionar ao carrinho
-    console.log(`Adicionando ${quantidade} unidade(s) do produto ${id} ao carrinho`);
+    toast({
+      title: "Produto adicionado",
+      description: `${quantidade} unidade(s) de ${produto.nome} adicionada(s) ao carrinho`,
+    });
+  };
+  
+  const handleSaveForLater = () => {
+    toast({
+      title: "Produto salvo",
+      description: `${produto.nome} foi salvo para comprar depois`,
+    });
+  };
+  
+  const handleCompareProduct = () => {
+    navigate(`/ecommerce/comparar?ids=${produto.id}`);
   };
   
   if (loading) {
@@ -87,6 +104,30 @@ const ProdutoDetalhe = () => {
     produto.imagem,
     "https://images.unsplash.com/photo-1558981806-ec527fa84c39?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
     "https://images.unsplash.com/photo-1558981806-ec527fa84c39?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60"
+  ];
+  
+  const comentariosExemplo = [
+    { 
+      id: 'comentario1', 
+      nome: 'João Silva', 
+      avaliacao: 5, 
+      texto: 'Produto excelente! Superou minhas expectativas. A entrega foi rápida e o produto chegou em perfeito estado.',
+      data: new Date(2023, 3, 15)
+    },
+    { 
+      id: 'comentario2', 
+      nome: 'Maria Oliveira', 
+      avaliacao: 4, 
+      texto: 'Muito bom, mas achei o preço um pouco elevado para o que oferece. De qualquer forma, estou satisfeita com a compra.',
+      data: new Date(2023, 2, 28)
+    },
+    { 
+      id: 'comentario3', 
+      nome: 'Carlos Rodrigues', 
+      avaliacao: 5, 
+      texto: 'Ótimo custo-benefício! Já é o segundo que compro deste modelo.',
+      data: new Date(2023, 1, 10)
+    }
   ];
   
   return (
@@ -142,15 +183,7 @@ const ProdutoDetalhe = () => {
             <h1 className="text-3xl font-bold mb-2">{produto.nome}</h1>
             
             <div className="flex items-center mb-4">
-              <div className="flex text-amber-500">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className="h-4 w-4" 
-                    fill={i < produto.avaliacao ? "currentColor" : "none"} 
-                  />
-                ))}
-              </div>
+              <AvaliacaoEstrelas avaliacao={produto.avaliacao} tamanho={4} />
               <span className="text-sm text-muted-foreground ml-1">
                 ({produto.avaliacao.toFixed(1)}) • {produto.estoque} em estoque
               </span>
@@ -209,8 +242,8 @@ const ProdutoDetalhe = () => {
               >
                 <ShoppingCart className="mr-2 h-4 w-4" /> Adicionar ao carrinho
               </Button>
-              <Button variant="outline">
-                <Heart className="h-4 w-4" />
+              <Button variant="outline" onClick={handleSaveForLater}>
+                <Bookmark className="h-4 w-4" />
               </Button>
               <Button variant="outline">
                 <Share2 className="h-4 w-4" />
@@ -297,40 +330,10 @@ const ProdutoDetalhe = () => {
           </TabsContent>
           
           <TabsContent value="avaliacoes" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">Avaliações de Clientes</h2>
-              <Button>Escrever Avaliação</Button>
-            </div>
-            
-            <div className="space-y-4">
-              {[1, 2, 3].map(i => (
-                <Card key={i} className="border">
-                  <CardContent className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">Cliente {i}</h3>
-                        <div className="flex text-amber-500 my-1">
-                          {[...Array(5)].map((_, star) => (
-                            <Star 
-                              key={star} 
-                              className="h-4 w-4" 
-                              fill={star < 4 ? "currentColor" : "none"} 
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        12/05/2023
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm">
-                      Produto excelente, atendeu todas as minhas expectativas. 
-                      Entrega rápida e produto bem embalado.
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ComentariosAvaliacoes 
+              produtoId={produto.id}
+              comentarios={comentariosExemplo}
+            />
           </TabsContent>
           
           <TabsContent value="pagamento" className="space-y-4">

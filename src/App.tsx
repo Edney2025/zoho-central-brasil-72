@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -66,6 +65,9 @@ import MeusAnunciosPage from "./pages/Ecommerce/MeusAnunciosPage";
 import { AuthProvider, supabase } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
+// Adicionar o import da página de comparação
+import ComparacaoProdutos from "./pages/Ecommerce/ComparacaoProdutos";
+
 // Create a client
 const queryClient = new QueryClient();
 
@@ -110,6 +112,8 @@ const App = () => {
                     <Route path="anunciar" element={<AnunciarPage />} />
                     <Route path="meus-anuncios" element={<MeusAnunciosPage />} />
                     <Route path="editar/:id" element={<AnunciarPage />} />
+                    {/* Nova rota de comparação de produtos */}
+                    <Route path="comparar" element={<ComparacaoProdutos />} />
                   </Route>
                   
                   {/* Calculadoras routes */}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,17 +8,17 @@ import { Input } from '@/components/ui/input';
 import {
   Search,
   Download,
-  ThumbsUp,
-  ThumbsDown,
-  Clock,
-  AlertCircle,
   Check,
   X,
+  Clock,
+  AlertCircle,
   Eye,
   PlusCircle,
   Filter,
 } from 'lucide-react';
 import { localStorageService } from '@/services/localStorageService';
+import BuscaAvancada from './components/BuscaAvancada';
+import { toast } from '@/components/ui/use-toast';
 
 // Exemplo de dados para inicialização
 const orcamentosExemplo = [
@@ -145,6 +144,7 @@ const OrcamentosPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [orcamentos, setOrcamentos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filtrosAvancados, setFiltrosAvancados] = useState<any>(null);
   
   useEffect(() => {
     // Verificar se já existem orçamentos no localStorage
@@ -162,13 +162,57 @@ const OrcamentosPage: React.FC = () => {
   }, []);
   
   const filteredOrcamentos = orcamentos.filter(orcamento => {
-    const matchesSearch = orcamento.cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // Filtro básico de busca
+    const matchesSearch = searchTerm === '' || 
+                        orcamento.cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         orcamento.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                         orcamento.valor.toLowerCase().includes(searchTerm.toLowerCase());
     
+    // Filtro de status
     const matchesStatus = statusFilter === null || orcamento.status === statusFilter;
     
-    return matchesSearch && matchesStatus;
+    // Filtros avançados
+    let matchesFiltrosAvancados = true;
+    
+    if (filtrosAvancados) {
+      // Filtro de cliente
+      if (filtrosAvancados.cliente && !orcamento.cliente.nome.toLowerCase().includes(filtrosAvancados.cliente.toLowerCase())) {
+        matchesFiltrosAvancados = false;
+      }
+      
+      // Filtros de valor
+      const valorNumerico = parseFloat(orcamento.valor.replace(/[^\d,]/g, '').replace(',', '.'));
+      
+      if (filtrosAvancados.valorMinimo && valorNumerico < parseFloat(filtrosAvancados.valorMinimo.replace(/[^\d,]/g, '').replace(',', '.'))) {
+        matchesFiltrosAvancados = false;
+      }
+      
+      if (filtrosAvancados.valorMaximo && valorNumerico > parseFloat(filtrosAvancados.valorMaximo.replace(/[^\d,]/g, '').replace(',', '.'))) {
+        matchesFiltrosAvancados = false;
+      }
+      
+      // Filtro de forma de pagamento
+      if (filtrosAvancados.formaPagamento && 
+          !orcamento.condicoesPagamento.toLowerCase().includes(filtrosAvancados.formaPagamento.toLowerCase())) {
+        matchesFiltrosAvancados = false;
+      }
+      
+      // Filtros de data
+      if (filtrosAvancados.dataInicio || filtrosAvancados.dataFim) {
+        const dataParts = orcamento.data.split('/');
+        const orcamentoDate = new Date(dataParts[2], dataParts[1] - 1, dataParts[0]);
+        
+        if (filtrosAvancados.dataInicio && orcamentoDate < filtrosAvancados.dataInicio) {
+          matchesFiltrosAvancados = false;
+        }
+        
+        if (filtrosAvancados.dataFim && orcamentoDate > filtrosAvancados.dataFim) {
+          matchesFiltrosAvancados = false;
+        }
+      }
+    }
+    
+    return matchesSearch && matchesStatus && matchesFiltrosAvancados;
   });
   
   const getStatusBadge = (status: string) => {
@@ -191,8 +235,22 @@ const OrcamentosPage: React.FC = () => {
   };
 
   const handleAddNewOrcamento = () => {
-    // Em uma aplicação real, aqui abriria um formulário de novo orçamento
     navigate('/orcamentos/novo');
+  };
+
+  const handleFilterChange = (filtros: any) => {
+    setFiltrosAvancados(filtros);
+    toast({
+      title: "Filtros aplicados",
+      description: "A lista de orçamentos foi filtrada com os critérios selecionados.",
+    });
+  };
+  
+  const handleDownloadOrcamento = (id: string) => {
+    toast({
+      title: "Download iniciado",
+      description: `O orçamento ${id} será baixado em PDF.`,
+    });
   };
   
   return (
@@ -205,7 +263,7 @@ const OrcamentosPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-3">
+        <div className="md:col-span-2">
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
             <Input
@@ -217,11 +275,12 @@ const OrcamentosPage: React.FC = () => {
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="md:col-span-2 flex items-center gap-2 justify-end">
+          <BuscaAvancada onFilterChange={handleFilterChange} />
+          
           <Button 
             variant={statusFilter === 'pendente' ? 'default' : 'outline'}
             size="sm"
-            className="flex-1"
             onClick={() => handleStatusFilter('pendente')}
           >
             <Clock className={`mr-1 h-3 w-3 ${statusFilter === 'pendente' ? 'text-white' : 'text-yellow-500'}`} />
@@ -230,19 +289,10 @@ const OrcamentosPage: React.FC = () => {
           <Button 
             variant={statusFilter === 'aprovado' ? 'default' : 'outline'}
             size="sm"
-            className="flex-1"
             onClick={() => handleStatusFilter('aprovado')}
           >
             <Check className={`mr-1 h-3 w-3 ${statusFilter === 'aprovado' ? 'text-white' : 'text-green-500'}`} />
             Aprovados
-          </Button>
-          <Button 
-            variant="outline"
-            size="icon"
-            onClick={() => setStatusFilter(null)}
-            disabled={statusFilter === null}
-          >
-            <Filter className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -288,7 +338,11 @@ const OrcamentosPage: React.FC = () => {
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={() => handleDownloadOrcamento(orcamento.id)}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </TableCell>
