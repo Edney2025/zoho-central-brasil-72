@@ -1,127 +1,86 @@
+import { createContext, useContext, useState, useEffect } from 'react';
+import { Session, SupabaseClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
-
-type AuthContextType = {
-  user: User | null;
+// Define the AuthContext type
+interface AuthContextType {
+  supabaseClient: SupabaseClient | null;
   session: Session | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: any | null, data: any | null }>;
+  user: Session['user'] | null;
+  isLoading: boolean;
   signOut: () => Promise<void>;
-  isCustomer: boolean;
-};
+}
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create the AuthContext with a default value
+const AuthContext = createContext<AuthContextType>({
+  supabaseClient: null,
+  session: null,
+  user: null,
+  isLoading: true,
+  signOut: async () => {},
+});
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+// AuthProvider component
+export function AuthProvider({ children, supabaseClient }: { children: React.ReactNode; supabaseClient: SupabaseClient }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isCustomer, setIsCustomer] = useState(false);
+  const [user, setUser] = useState<Session['user'] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    // First set up the auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        // Use setTimeout to avoid Supabase auth deadlock when making subsequent calls
-        if (currentSession?.user) {
-          setTimeout(() => {
-            checkIfCustomer(currentSession.user.id);
-          }, 0);
-        } else {
-          setIsCustomer(false);
-        }
-      }
-    );
-
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      if (currentSession?.user) {
-        checkIfCustomer(currentSession.user.id);
-      }
-      setLoading(false);
+    setIsLoading(true);
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user || null);
+    }).finally(() => {
+      setIsLoading(false);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    supabaseClient.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user || null);
+    });
+  }, [supabaseClient]);
 
-  const checkIfCustomer = async (userId: string) => {
-    try {
-      // Use a more generic approach with any type to work around the type constraints
-      const { data, error } = await (supabase
-        .from('customers') as any)
-        .select('id')
-        .eq('user_id', userId)
-        .single();
-        
-      // Handle potential errors
-      if (error) throw error;
-      
-      // If we get here, we have a valid customer
-      setIsCustomer(!!data);
-    } catch (error) {
-      console.error('Error checking customer status:', error);
-      setIsCustomer(false);
-    }
-  };
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      return { error };
-    } catch (error) {
-      console.error('Error signing in:', error);
-      return { error };
-    }
-  };
-
-  const signUp = async (email: string, password: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (!error) {
-        toast({
-          title: "Conta criada com sucesso!",
-          description: "Um email de confirmação foi enviado para seu endereço de email.",
+  useEffect(() => {
+    if (user) {
+      // Check if customer data exists
+      supabase
+        .from('customers' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .single()
+        .then(({ data, error }) => {
+          if (error && error.code === 'PGRST116') {
+            // No customer data exists, so create it
+            supabase.from('customers').insert([
+              {
+                user_id: user.id,
+                email: user.email,
+              },
+            ]);
+          }
         });
-      }
-      return { data, error };
-    } catch (error) {
-      console.error('Error signing up:', error);
-      return { error, data: null };
     }
-  };
+  }, [user]);
 
   const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setIsCustomer(false);
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    await supabaseClient.auth.signOut();
+    setUser(null);
+    router.push('/login');
   };
 
-  return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut, isCustomer }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value: AuthContextType = { supabaseClient, session, user, isLoading, signOut };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+// Custom hook to use the AuthContext
+export const useAuth = () => {
+  return useContext(AuthContext);
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const supabase = new SupabaseClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+);
