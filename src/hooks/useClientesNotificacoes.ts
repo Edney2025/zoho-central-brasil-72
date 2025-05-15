@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from '@/components/ui/use-toast';
@@ -56,9 +57,11 @@ export function useClientesNotificacoes() {
           sonnerToast({
             title: `${notif.tipo === 'aniversario' ? '🎂' : '📅'} Hoje: ${notif.descricao}`,
             description: notif.clienteNome,
-            action: React.createElement(ToastAction, {
-              onClick: () => console.log("Ver notificação", notif.id)
-            }, "Ver")
+            action: (
+              <ToastAction altText="Ver notificação" onClick={() => console.log("Ver notificação", notif.id)}>
+                Ver
+              </ToastAction>
+            )
           });
         });
       }

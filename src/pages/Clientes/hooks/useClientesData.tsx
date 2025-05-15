@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "@/components/ui/use-toast";
@@ -138,9 +139,11 @@ export function useClientesData() {
     sonnerToast({
       title: "Lembrete adicionado",
       description: `Próximo contato com ${cliente.nome} foi agendado.`,
-      action: React.createElement(ToastAction, {
-        onClick: () => console.log("Viewing reminder")
-      }, "Ver")
+      action: (
+        <ToastAction altText="Ver lembrete" onClick={() => console.log("Viewing reminder")}>
+          Ver
+        </ToastAction>
+      )
     });
   };
   
