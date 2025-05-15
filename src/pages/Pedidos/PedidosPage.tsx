@@ -1,80 +1,100 @@
 
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, PlusCircle } from 'lucide-react';
-import OrcamentosTable from './components/OrcamentosTable';
-import { orcamentosMock } from './data/orcamentos-mock';
+
+// Importação dos componentes refatorados
+import { PedidosHeader } from './components/PedidosHeader';
+import { PedidosFilters } from './components/PedidosFilters';
+import { PedidosTable } from './components/PedidosTable';
+import { PedidoDetailsDialog } from './components/PedidoDetailsDialog';
+
+// Importação dos hooks customizados
+import { usePedidosData } from './hooks/usePedidosData';
+import { usePedidosFilters } from './hooks/usePedidosFilters';
 
 const PedidosPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('orcamentos');
+  // Usando os hooks customizados
+  const {
+    searchTerm,
+    selectedDate,
+    activeTab,
+    showDateFilter,
+    setSearchTerm,
+    setSelectedDate,
+    setActiveTab,
+    setShowDateFilter,
+    handleDateSelect,
+    clearFilters,
+    filterApplied
+  } = usePedidosFilters();
   
-  const filteredOrcamentos = orcamentosMock.filter(orcamento => 
-    orcamento.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    orcamento.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const {
+    pedidos,
+    selectedPedido,
+    openDetails,
+    isGeneratingPdf,
+    setOpenDetails,
+    viewPedidoDetails,
+    handleDownloadPdf,
+    handlePrintPedido,
+    filterPedidos
+  } = usePedidosData();
+  
+  // Usando memoização para evitar recálculos desnecessários da filtragem
+  const filteredPedidos = useMemo(() => {
+    return filterPedidos(searchTerm, activeTab, selectedDate);
+  }, [filterPedidos, searchTerm, activeTab, selectedDate]);
   
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold">Pedidos e Orçamentos</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" /> Novo Orçamento
-        </Button>
-      </div>
+      <PedidosHeader onDownloadPdf={handleDownloadPdf} />
       
-      <div className="flex flex-col sm:flex-row items-center gap-4">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por cliente, número..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-      </div>
+      <PedidosFilters
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        showDateFilter={showDateFilter}
+        setShowDateFilter={setShowDateFilter}
+        selectedDate={selectedDate}
+        onDateSelect={handleDateSelect}
+        activeTab={activeTab}
+        filterApplied={filterApplied}
+        onClearFilters={clearFilters}
+      />
       
-      <Tabs defaultValue="orcamentos" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="orcamentos">Orçamentos</TabsTrigger>
-          <TabsTrigger value="pedidos">Pedidos</TabsTrigger>
-          <TabsTrigger value="vendas">Vendas Finalizadas</TabsTrigger>
-        </TabsList>
-        <TabsContent value="orcamentos" className="pt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Orçamentos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <OrcamentosTable orcamentos={filteredOrcamentos} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="pedidos" className="pt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pedidos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Não há pedidos disponíveis.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="vendas" className="pt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Vendas Finalizadas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Não há vendas finalizadas disponíveis.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Card>
+        <CardHeader>
+          <CardTitle>Lista de Pedidos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList>
+              <TabsTrigger value="todos">Todos</TabsTrigger>
+              <TabsTrigger value="pendente">Pendentes</TabsTrigger>
+              <TabsTrigger value="aprovado">Aprovados</TabsTrigger>
+              <TabsTrigger value="concluido">Concluídos</TabsTrigger>
+            </TabsList>
+            
+            <div className="mt-4">
+              <PedidosTable
+                pedidos={filteredPedidos}
+                onViewDetails={viewPedidoDetails}
+                onDownloadPdf={handleDownloadPdf}
+                isGeneratingPdf={isGeneratingPdf}
+              />
+            </div>
+          </Tabs>
+        </CardContent>
+      </Card>
+      
+      <PedidoDetailsDialog
+        open={openDetails}
+        pedido={selectedPedido}
+        onOpenChange={setOpenDetails}
+        onDownload={handleDownloadPdf}
+        onPrint={handlePrintPedido}
+        isGeneratingPdf={isGeneratingPdf}
+      />
     </div>
   );
 };

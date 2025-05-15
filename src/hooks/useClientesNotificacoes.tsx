@@ -2,9 +2,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from '@/components/ui/use-toast';
-import { NotificacaoCliente, verificarNotificacoesDoDia } from '@/services/notificacoesClientesService';
+import { verificarNotificacoesDoDia } from '@/services/notificacoesClientesService';
 import { ToastAction } from '@/components/ui/toast';
 import React from 'react';
+
+export interface NotificacaoCliente {
+  id: string;
+  clienteId: string;
+  clienteNome: string;
+  tipo: string;
+  data: string;
+  descricao: string;
+  status: string;
+  criada: string;
+}
 
 // Hook customizado para gerenciar notificações de clientes
 export function useClientesNotificacoes() {
