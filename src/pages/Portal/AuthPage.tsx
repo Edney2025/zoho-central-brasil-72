@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { KeyRound, Mail, AlertCircle } from 'lucide-react';
+import { KeyRound, Mail, AlertCircle, ArrowLeft } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -27,12 +28,19 @@ const signupSchema = z.object({
   path: ["confirmPassword"],
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Email inválido')
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
 type SignupFormValues = z.infer<typeof signupSchema>;
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const AuthPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('login');
   const [error, setError] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   
@@ -58,12 +66,24 @@ const AuthPage: React.FC = () => {
       confirmPassword: '',
     },
   });
+  
+  const forgotPasswordForm = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
 
   const handleLogin = async (values: LoginFormValues) => {
     setError(null);
     const { error } = await signIn(values.email, values.password);
     if (error) {
       setError('Falha no login. Verifique suas credenciais.');
+    } else {
+      toast({
+        title: "Login realizado com sucesso",
+        description: "Bem-vindo ao Portal do Cliente"
+      });
     }
   };
 
@@ -74,8 +94,103 @@ const AuthPage: React.FC = () => {
       setError('Erro ao criar conta. Este email pode já estar em uso.');
     } else {
       setActiveTab('login');
+      toast({
+        title: "Conta criada com sucesso",
+        description: "Faça login para acessar sua conta"
+      });
     }
   };
+  
+  const handleForgotPassword = async (values: ForgotPasswordFormValues) => {
+    // Simulating password reset functionality - in a real app, connect to Supabase or auth provider
+    setError(null);
+    // Mock a successful password reset email
+    setTimeout(() => {
+      setResetEmailSent(true);
+      toast({
+        title: "Email enviado",
+        description: "Verifique sua caixa de entrada para redefinir sua senha"
+      });
+    }, 1500);
+  };
+  
+  const backToLogin = () => {
+    setShowForgotPassword(false);
+    setResetEmailSent(false);
+  };
+
+  if (showForgotPassword) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold mb-2">Portal do Cliente</h1>
+            <p className="text-muted-foreground">Recupere o acesso à sua conta</p>
+          </div>
+          
+          <Card>
+            <CardHeader>
+              <Button 
+                variant="ghost" 
+                className="p-0 h-8 w-8 absolute top-4 left-4" 
+                onClick={backToLogin}
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <CardTitle className="text-center">Recuperar Senha</CardTitle>
+              <CardDescription className="text-center">
+                Digite seu email para receber instruções de recuperação
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              {resetEmailSent ? (
+                <div className="text-center py-4">
+                  <div className="bg-green-100 text-green-800 p-3 rounded-md mb-4">
+                    <p>Email de recuperação enviado!</p>
+                    <p className="text-sm mt-1">Verifique sua caixa de entrada para continuar.</p>
+                  </div>
+                  <Button onClick={backToLogin} className="mt-2">
+                    Voltar ao login
+                  </Button>
+                </div>
+              ) : (
+                <Form {...forgotPasswordForm}>
+                  <form onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)} className="space-y-4">
+                    <FormField
+                      control={forgotPasswordForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                              <Input className="pl-10" placeholder="seu@email.com" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full">
+                      Enviar instruções
+                    </Button>
+                  </form>
+                </Form>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
@@ -146,8 +261,13 @@ const AuthPage: React.FC = () => {
                   </form>
                 </Form>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="ghost" size="sm" onClick={() => {}}>
+              <CardFooter className="flex justify-center">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-primary"
+                >
                   Esqueceu a senha?
                 </Button>
               </CardFooter>

@@ -16,8 +16,21 @@ import {
   Clock,
   ChevronRight,
   CheckCircle2,
-  TrendingUp
+  TrendingUp,
+  Filter,
+  Printer
 } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 
 // Mock data for the orders
 const pedidosExemplo = [
@@ -115,11 +128,42 @@ const PedidosPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPedido, setSelectedPedido] = useState<typeof pedidosExemplo[0] | null>(null);
   const [openDetails, setOpenDetails] = useState(false);
+  const [activeTab, setActiveTab] = useState('todos');
+  const [showDateFilter, setShowDateFilter] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   
-  const filteredPedidos = pedidosExemplo.filter(pedido => 
-    pedido.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pedido.valor.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPedidos = pedidosExemplo.filter(pedido => {
+    // Apply status filter
+    if (activeTab !== 'todos' && pedido.status !== activeTab) {
+      return false;
+    }
+    
+    // Apply search filter
+    if (
+      !pedido.id.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !pedido.valor.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !pedido.data.toLowerCase().includes(searchTerm.toLowerCase())
+    ) {
+      return false;
+    }
+    
+    // Apply date filter
+    if (selectedDate) {
+      const pedidoDate = new Date(pedido.data.split('/').reverse().join('-'));
+      const filterDate = new Date(selectedDate);
+      
+      if (
+        pedidoDate.getDate() !== filterDate.getDate() ||
+        pedidoDate.getMonth() !== filterDate.getMonth() ||
+        pedidoDate.getFullYear() !== filterDate.getFullYear()
+      ) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
   
   const getStatusBadge = (status: string) => {
     switch(status) {
@@ -142,34 +186,143 @@ const PedidosPage: React.FC = () => {
     setSelectedPedido(pedido);
     setOpenDetails(true);
   };
+
+  const handleDownloadPdf = (pedidoId: string) => {
+    setIsGeneratingPdf(true);
+    
+    // Simulate PDF generation delay
+    setTimeout(() => {
+      toast({
+        title: "PDF Gerado",
+        description: `O PDF do pedido ${pedidoId} foi gerado com sucesso.`
+      });
+      setIsGeneratingPdf(false);
+    }, 1500);
+  };
+  
+  const handlePrintPedido = () => {
+    toast({
+      title: "Impressão iniciada",
+      description: "O documento foi enviado para impressão."
+    });
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+    setShowDateFilter(false);
+  };
+  
+  const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedDate(undefined);
+    setActiveTab('todos');
+  };
   
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h1 className="text-3xl font-bold">Meus Pedidos</h1>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              Exportar
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Opções de Exportação</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleDownloadPdf('todos')}>
+              <FileText className="mr-2 h-4 w-4" />
+              Exportar todos como PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Download className="mr-2 h-4 w-4" />
+              Exportar como CSV
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-        <Input
-          placeholder="Buscar pedidos..."
-          className="pl-10"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+          <Input
+            placeholder="Buscar pedidos..."
+            className="pl-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <Popover open={showDateFilter} onOpenChange={setShowDateFilter}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="w-full sm:w-auto">
+              <Filter className="mr-2 h-4 w-4" />
+              {selectedDate ? new Date(selectedDate).toLocaleDateString('pt-BR') : "Filtrar por data"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDateSelect}
+              initialFocus
+            />
+            <div className="p-3 border-t">
+              <Button variant="ghost" size="sm" onClick={() => setSelectedDate(undefined)} className="w-full">
+                Limpar data
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+        
+        {(searchTerm || selectedDate || activeTab !== 'todos') && (
+          <Button variant="ghost" size="icon" onClick={clearFilters} className="sm:hidden">
+            <X className="h-4 w-4" />
+          </Button>
+        )}
       </div>
+      
+      {(searchTerm || selectedDate || activeTab !== 'todos') && (
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Filtros ativos:</span>
+          {searchTerm && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              Busca: {searchTerm}
+              <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => setSearchTerm('')} />
+            </Badge>
+          )}
+          {selectedDate && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              Data: {new Date(selectedDate).toLocaleDateString('pt-BR')}
+              <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => setSelectedDate(undefined)} />
+            </Badge>
+          )}
+          {activeTab !== 'todos' && (
+            <Badge variant="outline" className="flex items-center gap-1">
+              Status: {activeTab}
+              <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => setActiveTab('todos')} />
+            </Badge>
+          )}
+          <Button variant="ghost" size="sm" onClick={clearFilters} className="ml-auto hidden sm:flex">
+            Limpar filtros
+          </Button>
+        </div>
+      )}
       
       <Card>
         <CardHeader>
           <CardTitle>Lista de Pedidos</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="todos" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList>
               <TabsTrigger value="todos">Todos</TabsTrigger>
-              <TabsTrigger value="pendentes">Pendentes</TabsTrigger>
-              <TabsTrigger value="aprovados">Aprovados</TabsTrigger>
-              <TabsTrigger value="concluidos">Concluídos</TabsTrigger>
+              <TabsTrigger value="pendente">Pendentes</TabsTrigger>
+              <TabsTrigger value="aprovado">Aprovados</TabsTrigger>
+              <TabsTrigger value="concluido">Concluídos</TabsTrigger>
             </TabsList>
             
             <div className="mt-4">
@@ -186,7 +339,7 @@ const PedidosPage: React.FC = () => {
                 <TableBody>
                   {filteredPedidos.length > 0 ? (
                     filteredPedidos.map((pedido) => (
-                      <TableRow key={pedido.id}>
+                      <TableRow key={pedido.id} className="cursor-pointer" onClick={() => viewPedidoDetails(pedido)}>
                         <TableCell className="font-medium">{pedido.id}</TableCell>
                         <TableCell>{pedido.data}</TableCell>
                         <TableCell>{pedido.valor}</TableCell>
@@ -195,11 +348,22 @@ const PedidosPage: React.FC = () => {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            onClick={() => viewPedidoDetails(pedido)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              viewPedidoDetails(pedido);
+                            }}
                           >
                             <FileText className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadPdf(pedido.id);
+                            }}
+                            disabled={isGeneratingPdf}
+                          >
                             <Download className="h-4 w-4" />
                           </Button>
                         </TableCell>
@@ -221,7 +385,7 @@ const PedidosPage: React.FC = () => {
       
       {/* Order Details Dialog */}
       <Dialog open={openDetails} onOpenChange={setOpenDetails}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalhes do Pedido {selectedPedido?.id}</DialogTitle>
           </DialogHeader>
@@ -299,10 +463,19 @@ const PedidosPage: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex justify-between">
-                <Button variant="outline">
-                  <Download className="mr-2 h-4 w-4" /> Baixar PDF
-                </Button>
+              <div className="flex flex-wrap gap-3 justify-between">
+                <div className="space-x-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => handleDownloadPdf(selectedPedido.id)}
+                    disabled={isGeneratingPdf}
+                  >
+                    <Download className="mr-2 h-4 w-4" /> Baixar PDF
+                  </Button>
+                  <Button variant="outline" onClick={handlePrintPedido}>
+                    <Printer className="mr-2 h-4 w-4" /> Imprimir
+                  </Button>
+                </div>
                 <Button onClick={() => setOpenDetails(false)}>
                   Fechar <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>

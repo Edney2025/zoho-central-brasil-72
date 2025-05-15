@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, NavLink } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -12,15 +12,33 @@ import {
   HelpCircle,
   User,
   LogOut,
-  Bell
+  Bell,
+  Menu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { toast } from '@/components/ui/use-toast';
 
 export const PortalLayout = () => {
   const { user, isLoading, signOut, isCustomer } = useAuth();
   const navigate = useNavigate();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: 'Seu orçamento foi aprovado', read: false },
+    { id: 2, text: 'Atualize seus dados cadastrais', read: false },
+    { id: 3, text: 'Novo status no seu pedido #12345', read: true }
+  ]);
   
   useEffect(() => {
     if (!isLoading && !user) {
@@ -28,6 +46,11 @@ export const PortalLayout = () => {
     } else if (!isLoading && user && !isCustomer) {
       // If user is logged in but not a customer, redirect to profile update
       navigate('/portal/profile');
+      toast({
+        title: "Por favor, complete seu cadastro",
+        description: "Complete seu perfil para utilizar todos os recursos do portal",
+        duration: 5000,
+      });
     }
   }, [user, isLoading, navigate, isCustomer]);
 
@@ -55,10 +78,26 @@ export const PortalLayout = () => {
   ];
 
   const userInitials = user?.email ? user.email.substring(0, 2).toUpperCase() : '??';
+  
+  const unreadNotifications = notifications.filter(n => !n.read).length;
+  
+  const markNotificationAsRead = (id: number) => {
+    setNotifications(notifications.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    ));
+  };
+  
+  const markAllNotificationsAsRead = () => {
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
+    toast({
+      title: "Notificações",
+      description: "Todas as notificações foram marcadas como lidas",
+    });
+  };
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Sidebar */}
+      {/* Desktop Sidebar */}
       <aside className="w-64 bg-card border-r hidden md:flex flex-col">
         <div className="p-6">
           <h1 className="font-bold text-xl">Portal do Cliente</h1>
@@ -108,12 +147,107 @@ export const PortalLayout = () => {
 
       {/* Mobile header */}
       <div className="flex flex-col flex-1">
-        <header className="sticky top-0 z-10 flex md:hidden items-center justify-between p-4 border-b bg-background">
-          <h1 className="font-bold text-lg">Portal do Cliente</h1>
+        <header className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-background">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
-              <Bell className="h-5 w-5" />
-            </Button>
+            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[240px] sm:w-[300px]">
+                <div className="py-4">
+                  <div className="flex items-center gap-3 p-2 rounded-lg bg-muted mb-4">
+                    <Avatar>
+                      <AvatarFallback>{userInitials}</AvatarFallback>
+                    </Avatar>
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-medium truncate">{user?.email}</p>
+                      <p className="text-xs text-muted-foreground">Cliente</p>
+                    </div>
+                  </div>
+                  
+                  <nav className="space-y-1">
+                    {navItems.map((item) => (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setMobileNavOpen(false)}
+                        className={({ isActive }) =>
+                          cn(
+                            "flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors",
+                            isActive 
+                              ? "bg-primary text-primary-foreground font-medium" 
+                              : "text-foreground hover:bg-muted"
+                          )
+                        }
+                      >
+                        <item.icon className="h-5 w-5" />
+                        {item.label}
+                      </NavLink>
+                    ))}
+                    
+                    <Button variant="ghost" className="w-full justify-start mt-4" onClick={handleSignOut}>
+                      <LogOut className="mr-2 h-5 w-5" />
+                      Sair
+                    </Button>
+                  </nav>
+                </div>
+              </SheetContent>
+            </Sheet>
+            <h1 className="font-bold text-lg md:hidden">Portal do Cliente</h1>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  {unreadNotifications > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0">
+                      {unreadNotifications}
+                    </Badge>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[300px]">
+                <DropdownMenuLabel className="flex justify-between items-center">
+                  <span>Notificações</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={markAllNotificationsAsRead}
+                    className="text-xs h-7"
+                  >
+                    Marcar todas como lidas
+                  </Button>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {notifications.length > 0 ? (
+                  notifications.map((notification) => (
+                    <DropdownMenuItem 
+                      key={notification.id} 
+                      className="cursor-pointer flex items-start p-2"
+                      onClick={() => markNotificationAsRead(notification.id)}
+                    >
+                      <div className="flex items-start gap-2">
+                        {!notification.read && (
+                          <div className="w-2 h-2 mt-1 rounded-full bg-primary flex-shrink-0" />
+                        )}
+                        <div className={cn("flex-1", notification.read ? "text-muted-foreground" : "")}>
+                          <p className="text-sm">{notification.text}</p>
+                          <p className="text-xs text-muted-foreground">Há 2 horas atrás</p>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    Nenhuma notificação
+                  </div>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Avatar className="h-8 w-8">
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
