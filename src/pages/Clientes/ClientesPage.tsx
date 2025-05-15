@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
 import ClientesTable from './components/ClientesTable';
+import ClientesNotificacoes from './components/ClientesNotificacoes';
 import ClienteForm from './components/ClienteForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Users, Plus } from 'lucide-react';
+import { FileText, Users, Plus, Tag, Bell } from 'lucide-react';
 
 const ClientesPage = () => {
   const [isAddingCliente, setIsAddingCliente] = useState(false);
@@ -67,45 +68,69 @@ const ClientesPage = () => {
           />
         </>
       ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <Tabs 
-              value={activeTab} 
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <TabsList className="grid w-full md:w-auto md:inline-flex grid-cols-2 h-auto">
-                <TabsTrigger value="listagem" className="flex items-center gap-2 py-2">
-                  <Users className="h-4 w-4" /> Listagem
-                </TabsTrigger>
-                <TabsTrigger value="documentos" className="flex items-center gap-2 py-2">
-                  <FileText className="h-4 w-4" /> Documentos
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="listagem" className="mt-4">
-                <ClientesTable 
-                  onAddClick={toggleAddCliente}
-                  onEditClick={handleEditCliente}
-                  onViewClick={handleViewCliente}
-                />
-              </TabsContent>
-              
-              <TabsContent value="documentos" className="mt-4">
-                <div className="bg-muted/30 rounded-lg p-8 text-center">
-                  <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
-                  <h3 className="mt-4 text-xl font-medium">Documentos dos Clientes</h3>
-                  <p className="mt-2 text-muted-foreground max-w-md mx-auto">
-                    Visualize todos os documentos enviados pelos clientes. Organize por tipo de documento ou por cliente.
-                  </p>
-                  <Button className="mt-4" variant="outline">
-                    Ver Todos os Documentos
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardContent className="pt-6">
+                <Tabs 
+                  value={activeTab} 
+                  onValueChange={setActiveTab}
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full md:w-auto md:inline-flex grid-cols-3 h-auto">
+                    <TabsTrigger value="listagem" className="flex items-center gap-2 py-2">
+                      <Users className="h-4 w-4" /> Listagem
+                    </TabsTrigger>
+                    <TabsTrigger value="etiquetas" className="flex items-center gap-2 py-2">
+                      <Tag className="h-4 w-4" /> Etiquetas
+                    </TabsTrigger>
+                    <TabsTrigger value="documentos" className="flex items-center gap-2 py-2">
+                      <FileText className="h-4 w-4" /> Documentos
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="listagem" className="mt-4">
+                    <ClientesTable 
+                      onAddClick={toggleAddCliente}
+                      onEditClick={handleEditCliente}
+                      onViewClick={handleViewCliente}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="etiquetas" className="mt-4">
+                    <div className="bg-muted/30 rounded-lg p-8 text-center">
+                      <Tag className="h-12 w-12 mx-auto text-muted-foreground" />
+                      <h3 className="mt-4 text-xl font-medium">Gestão de Etiquetas</h3>
+                      <p className="mt-2 text-muted-foreground max-w-md mx-auto">
+                        Crie e gerencie etiquetas personalizadas para categorizar seus clientes e facilitar a busca.
+                      </p>
+                      <Button className="mt-4" variant="outline">
+                        Gerenciar Etiquetas
+                      </Button>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="documentos" className="mt-4">
+                    <div className="bg-muted/30 rounded-lg p-8 text-center">
+                      <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
+                      <h3 className="mt-4 text-xl font-medium">Documentos dos Clientes</h3>
+                      <p className="mt-2 text-muted-foreground max-w-md mx-auto">
+                        Visualize todos os documentos enviados pelos clientes. Organize por tipo de documento ou por cliente.
+                      </p>
+                      <Button className="mt-4" variant="outline">
+                        Ver Todos os Documentos
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="lg:col-span-1">
+            <ClientesNotificacoes />
+          </div>
+        </div>
       )}
     </div>
   );

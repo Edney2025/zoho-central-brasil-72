@@ -13,7 +13,11 @@ import FormAddress from "./form/FormAddress";
 import FormFileUpload from "./form/FormFileUpload";
 import FormReview from "./form/FormReview";
 import FormAdditionalInfo from "./form/FormAdditionalInfo";
+import FormTags from "./form/FormTags"; // Novo componente
+import FormNotes from "./form/FormNotes"; // Novo componente
+import FormReminders from "./form/FormReminders"; // Novo componente
 import { ChevronLeft, ChevronRight, Save, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ClienteFormValues } from "./form/schema";
 
 interface ClienteFormProps {
@@ -25,6 +29,7 @@ const ClienteForm: React.FC<ClienteFormProps> = ({ clienteId, onSaved }) => {
   const [step, setStep] = useState(0);
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("info"); // Nova propriedade para os tabs
   
   const form = useForm<ClienteFormValues>({
     resolver: zodResolver(clienteFormSchema),
@@ -58,6 +63,17 @@ const ClienteForm: React.FC<ClienteFormProps> = ({ clienteId, onSaved }) => {
           observacoes: "Cliente VIP",
           profissao: "Engenheiro",
           dataNascimento: "1990-01-01",
+          tags: ["VIP", "Contrato Mensal"],
+          notes: [
+            {
+              id: "1",
+              text: "Cliente solicitou desconto na próxima compra.",
+              date: new Date().toISOString()
+            }
+          ],
+          proximoContato: "2023-06-15",
+          status: "Ativo",
+          classificacao: "Premium"
         });
         setIsLoading(false);
       }, 1000);
@@ -109,6 +125,15 @@ const ClienteForm: React.FC<ClienteFormProps> = ({ clienteId, onSaved }) => {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
       
+      // Criando notificações para eventos importantes
+      if (data.proximoContato) {
+        window.addNotification?.({
+          title: "Lembrete adicionado",
+          message: `Próximo contato com ${data.nome} agendado para ${new Date(data.proximoContato).toLocaleDateString('pt-BR')}`,
+          type: "info"
+        });
+      }
+      
       toast({
         title: clienteId ? "Cliente atualizado" : "Cliente cadastrado",
         description: clienteId
@@ -133,7 +158,34 @@ const ClienteForm: React.FC<ClienteFormProps> = ({ clienteId, onSaved }) => {
   const renderStepContent = () => {
     switch (step) {
       case 0:
-        return <FormPersonalInfo form={form} />;
+        return (
+          <>
+            <FormPersonalInfo form={form} />
+            <div className="mt-6 border-t pt-4">
+              <h3 className="text-lg font-medium mb-4">Informações Adicionais</h3>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="info">Informações</TabsTrigger>
+                  <TabsTrigger value="tags">Etiquetas</TabsTrigger>
+                  <TabsTrigger value="notes">Notas</TabsTrigger>
+                  <TabsTrigger value="reminders">Lembretes</TabsTrigger>
+                </TabsList>
+                <TabsContent value="info" className="pt-2">
+                  <FormAdditionalInfo form={form} />
+                </TabsContent>
+                <TabsContent value="tags" className="pt-2">
+                  <FormTags defaultTags={form.watch("tags")} />
+                </TabsContent>
+                <TabsContent value="notes" className="pt-2">
+                  <FormNotes />
+                </TabsContent>
+                <TabsContent value="reminders" className="pt-2">
+                  <FormReminders />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </>
+        );
       case 1:
         return <FormDocuments form={form} tipoPessoa={tipoPessoa} />;
       case 2:
