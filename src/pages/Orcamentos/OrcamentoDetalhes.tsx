@@ -98,7 +98,12 @@ const OrcamentoDetalhes: React.FC = () => {
       const orcamentoEncontrado = orcamentos.find((orc: any) => orc.id === id);
       
       if (orcamentoEncontrado) {
-        setOrcamento(orcamentoEncontrado);
+        // Ensure the status is one of the allowed types
+        const validStatus = orcamentoEncontrado.status as 'pendente' | 'aprovado' | 'reprovado' | 'vencido';
+        setOrcamento({
+          ...orcamentoEncontrado,
+          status: validStatus
+        });
       } else {
         sonnerToast("Orçamento não encontrado", {
           description: `O orçamento #${id} não foi encontrado no sistema.`,
@@ -112,13 +117,16 @@ const OrcamentoDetalhes: React.FC = () => {
 
   const handleApproveQuote = () => {
     if (orcamento) {
-      const updatedOrcamento = { ...orcamento, status: 'aprovado' };
+      const updatedOrcamento = { 
+        ...orcamento, 
+        status: 'aprovado' as const  // Explicitly type as const to match the union type
+      };
       setOrcamento(updatedOrcamento);
       
       // Atualiza no localStorage
       const orcamentos = localStorageService.getData('orcamentos') || [];
       const updatedOrcamentos = orcamentos.map((orc: any) => 
-        orc.id === id ? updatedOrcamento : orc
+        orc.id === id ? {...orc, status: 'aprovado'} : orc
       );
       localStorageService.setData('orcamentos', updatedOrcamentos);
       
@@ -131,13 +139,16 @@ const OrcamentoDetalhes: React.FC = () => {
 
   const handleRejectQuote = () => {
     if (orcamento) {
-      const updatedOrcamento = { ...orcamento, status: 'reprovado' };
+      const updatedOrcamento = { 
+        ...orcamento, 
+        status: 'reprovado' as const  // Explicitly type as const to match the union type
+      };
       setOrcamento(updatedOrcamento);
       
       // Atualiza no localStorage
       const orcamentos = localStorageService.getData('orcamentos') || [];
       const updatedOrcamentos = orcamentos.map((orc: any) => 
-        orc.id === id ? updatedOrcamento : orc
+        orc.id === id ? {...orc, status: 'reprovado'} : orc
       );
       localStorageService.setData('orcamentos', updatedOrcamentos);
       

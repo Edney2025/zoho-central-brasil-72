@@ -7,6 +7,27 @@ import { FinancialSummary } from './components/FinancialSummary';
 import { DashboardCharts } from './components/DashboardCharts';
 import { ActivityTabs } from './components/ActivityTabs';
 
+// Define proper prop interfaces to match component expectations
+interface DashboardHeaderProps {
+  title: string;
+  description: string;
+}
+
+interface DashboardFiltersProps {
+  onDateChange: (range: any) => void;
+}
+
+interface FinancialSummaryProps {
+  data: {
+    receitas: string;
+    despesas: string;
+    lucroLiquido: string;
+    ticketMedio: string;
+    taxaConversao: string;
+    crescimento: string;
+  };
+}
+
 const DashboardAnalytics = () => {
   const [dateRange, setDateRange] = useState({ from: new Date(), to: new Date() });
 
@@ -35,7 +56,7 @@ const DashboardAnalytics = () => {
     crescimento: '+12,3%'
   };
 
-  const handleDateChange = (range) => {
+  const handleDateChange = (range: any) => {
     setDateRange(range);
     // Aqui você implementaria a lógica para atualizar os dados com base na data
   };

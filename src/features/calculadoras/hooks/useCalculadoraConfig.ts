@@ -35,7 +35,7 @@ export const useCalculadoraConfig = () => {
     const loadConfig = () => {
       try {
         setIsLoading(true);
-        const settings = localStorageService.getCollection(localStorageService.COLLECTIONS.SETTINGS);
+        const settings = localStorageService.getData('settings') || [];
         const taxasConfig = settings.find(
           (setting: any) => setting.category === 'taxas'
         );
