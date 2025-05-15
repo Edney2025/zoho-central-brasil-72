@@ -12,7 +12,8 @@ import {
   MessageCircle,
   HelpCircle,
   User,
-  LogOut
+  LogOut,
+  Store
 } from 'lucide-react';
 
 interface PortalSidebarProps {
@@ -70,6 +71,18 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({ user, onSignOut })
             {item.label}
           </NavLink>
         ))}
+        
+        <div className="pt-2 pb-2">
+          <Separator />
+        </div>
+        
+        <a
+          href="/ecommerce/produtos"
+          className="flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors text-foreground hover:bg-muted"
+        >
+          <Store className="h-5 w-5" />
+          Loja Online
+        </a>
       </nav>
       
       <div className="p-4">

@@ -61,6 +61,13 @@ export const PortalLayout = () => {
           onSignOut={handleSignOut} 
         />
 
+        {/* Access to e-commerce banner */}
+        <div className="bg-primary/10 p-2 text-center">
+          <span className="text-sm">
+            Acesse nossa <a href="/ecommerce/produtos" className="font-bold text-primary hover:underline">Loja Online</a> com produtos novos e usados!
+          </span>
+        </div>
+
         {/* Main content */}
         <main className="flex-1 overflow-auto p-4 md:p-8">
           <Outlet />

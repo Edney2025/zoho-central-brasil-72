@@ -7,7 +7,7 @@ import {
   ShoppingBag,
   FileText,
   MessageCircle,
-  HelpCircle
+  Store
 } from 'lucide-react';
 
 export const MobileFooterNav = () => {
@@ -16,19 +16,19 @@ export const MobileFooterNav = () => {
     { icon: ShoppingBag, label: 'Pedidos', path: '/portal/pedidos' },
     { icon: FileText, label: 'Orçamentos', path: '/portal/orcamentos' },
     { icon: MessageCircle, label: 'Suporte', path: '/portal/suporte' },
-    { icon: HelpCircle, label: 'FAQ', path: '/portal/faq' },
+    { icon: Store, label: 'Loja', path: '/ecommerce/produtos' },
   ];
 
   return (
     <nav className="md:hidden flex items-center justify-around border-t bg-background py-2">
-      {navItems.slice(0, 5).map((item) => (
+      {navItems.map((item) => (
         <NavLink
           key={item.path}
           to={item.path}
           className={({ isActive }) =>
             cn(
               "flex flex-col items-center p-1",
-              isActive 
+              isActive && item.path.includes('/portal')
                 ? "text-primary" 
                 : "text-muted-foreground"
             )

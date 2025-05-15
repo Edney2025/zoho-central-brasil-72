@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,7 +6,7 @@ import {
   Users, DollarSign, Package, FileText, Calculator, Settings,
   LayoutDashboard, Receipt, ChartBar, CreditCard, Globe, ShieldCheck,
   BadgePercent, Calendar, MessageCircle, CircleDollarSign,
-  Smartphone, Briefcase, Coins, Wallet, BadgePlus, TrendingUp
+  Smartphone, Briefcase, Coins, Wallet, BadgePlus, TrendingUp, ShoppingBag
 } from 'lucide-react';
 
 const MenuItem = ({ 
@@ -82,14 +81,14 @@ const Dashboard = () => {
       ]
     },
     {
-      title: "Simulações e Produtos",
+      title: "E-commerce & Produtos",
       items: [
         { 
-          icon: Calculator, 
-          title: "Calculadoras", 
-          description: "Simulações de crédito e financiamentos", 
-          path: "/calculadoras",
-          color: "bg-amber-100 dark:bg-amber-900/30" 
+          icon: ShoppingBag, 
+          title: "Loja Online", 
+          description: "Gerencie sua loja online e produtos", 
+          path: "/ecommerce/produtos",
+          color: "bg-rose-100 dark:bg-rose-900/30" 
         },
         { 
           icon: Package, 
@@ -99,19 +98,19 @@ const Dashboard = () => {
           color: "bg-cyan-100 dark:bg-cyan-900/30" 
         },
         { 
+          icon: Calculator, 
+          title: "Calculadoras", 
+          description: "Simulações de crédito e financiamentos", 
+          path: "/calculadoras",
+          color: "bg-amber-100 dark:bg-amber-900/30" 
+        },
+        { 
           icon: BadgePercent, 
           title: "Taxas e Juros", 
           description: "Configuração de taxas e parcelamentos", 
           path: "/configuracoes/taxas",
-          color: "bg-rose-100 dark:bg-rose-900/30" 
-        },
-        { 
-          icon: Receipt, 
-          title: "Contratos", 
-          description: "Modelos e emissão de contratos", 
-          path: "/contratos",
           color: "bg-orange-100 dark:bg-orange-900/30" 
-        }
+        },
       ]
     },
     {

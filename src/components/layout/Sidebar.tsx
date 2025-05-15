@@ -17,7 +17,8 @@ import {
   Package,
   Settings,
   Calculator,
-  FileText
+  FileText,
+  ShoppingBag
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,6 +50,11 @@ export const AppSidebar = () => {
       title: "Pedidos & Orçamentos",
       icon: FileText,
       path: "/pedidos"
+    },
+    {
+      title: "Loja Online",
+      icon: ShoppingBag,
+      path: "/ecommerce/produtos"
     },
     {
       title: "Calculadoras",

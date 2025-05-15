@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -50,6 +51,12 @@ import SuportePage from "./pages/Portal/SuportePage";
 import FAQPage from "./pages/Portal/FAQPage";
 import ProfilePage from "./pages/Portal/ProfilePage";
 
+// E-commerce pages
+import ProdutosPage from "./pages/Ecommerce/ProdutosPage";
+import ProdutoDetalhe from "./pages/Ecommerce/ProdutoDetalhe";
+import CarrinhoPage from "./pages/Ecommerce/CarrinhoPage";
+import AnunciarPage from "./pages/Ecommerce/AnunciarPage";
+
 import { AuthProvider, supabase } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
@@ -82,6 +89,14 @@ const App = () => {
                   <Route path="financeiro" element={<FinanceiroPage />} />
                   <Route path="estoque" element={<EstoquePage />} />
                   <Route path="pedidos" element={<PedidosPage />} />
+                  
+                  {/* E-commerce routes */}
+                  <Route path="ecommerce">
+                    <Route path="produtos" element={<ProdutosPage />} />
+                    <Route path="produto/:id" element={<ProdutoDetalhe />} />
+                    <Route path="carrinho" element={<CarrinhoPage />} />
+                    <Route path="anunciar" element={<AnunciarPage />} />
+                  </Route>
                   
                   {/* Calculadoras routes */}
                   <Route path="calculadoras" element={<CalculadorasPage />} />

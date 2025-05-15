@@ -49,6 +49,19 @@ export function AuthProvider({ children, supabaseClient }: { children: React.Rea
       setUser(session?.user || null);
     });
 
+    // Simular um usuário admin para teste
+    if (typeof window !== 'undefined') {
+      // Verifica se o email e senha estão armazenados localmente
+      const storedEmail = localStorage.getItem('admin_email');
+      const storedPassword = localStorage.getItem('admin_password');
+      
+      // Se não estiverem armazenados, armazena o email e senha do admin
+      if (!storedEmail || !storedPassword) {
+        localStorage.setItem('admin_email', 'admin@gmail.com');
+        localStorage.setItem('admin_password', '68366836');
+      }
+    }
+
     return () => {
       subscription.unsubscribe();
     };
@@ -81,6 +94,26 @@ export function AuthProvider({ children, supabaseClient }: { children: React.Rea
 
   const signIn = async (email: string, password: string) => {
     try {
+      // Verificar se é o usuário admin simulado
+      const adminEmail = localStorage.getItem('admin_email');
+      const adminPassword = localStorage.getItem('admin_password');
+      
+      if (email === adminEmail && password === adminPassword) {
+        // Criar uma sessão fictícia para o admin
+        const adminUser = {
+          id: 'admin-id',
+          email: adminEmail,
+          role: 'admin',
+        };
+        
+        // Simular uma sessão para o admin
+        setUser(adminUser as any);
+        setIsCustomer(true);
+        
+        return { error: null };
+      }
+      
+      // Se não for o admin, continua com o fluxo normal do Supabase
       const { error } = await supabaseClient.auth.signInWithPassword({
         email,
         password,
