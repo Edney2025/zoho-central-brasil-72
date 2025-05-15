@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import {
@@ -14,6 +15,7 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  variant?: "default" | "destructive" | "success" | "info" | "warning"
 }
 
 const actionTypes = {
@@ -126,9 +128,34 @@ function dispatch(action: Action) {
   })
 }
 
+interface ToastProps {
+  title?: React.ReactNode
+  description?: React.ReactNode
+  action?: ToastActionElement
+  variant?: "default" | "destructive" | "success" | "info" | "warning"
+}
+
+// Define the Toast type
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+// Define the return type for toast function
+interface ToastReturn {
+  id: string
+  dismiss: () => void
+  update: (props: ToasterToast) => void
+}
+
+// Define the extended toast function with variants
+interface ToastFunction {
+  (props: Toast): ToastReturn
+  success: (props: Omit<Toast, "variant">) => ToastReturn
+  error: (props: Omit<Toast, "variant">) => ToastReturn
+  warning: (props: Omit<Toast, "variant">) => ToastReturn
+  info: (props: Omit<Toast, "variant">) => ToastReturn
+}
+
+// Create the main toast function
+const toast = function(props: Toast): ToastReturn {
   const id = genId()
 
   const update = (props: ToasterToast) =>
@@ -155,7 +182,13 @@ function toast({ ...props }: Toast) {
     dismiss,
     update,
   }
-}
+} as ToastFunction
+
+// Add variant methods to the toast function
+toast.success = (props) => toast({ ...props, variant: "success" });
+toast.error = (props) => toast({ ...props, variant: "destructive" });
+toast.warning = (props) => toast({ ...props, variant: "warning" });
+toast.info = (props) => toast({ ...props, variant: "info" });
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)

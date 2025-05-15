@@ -1,95 +1,94 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { X, Tag, Plus } from "lucide-react";
-import { useFormContext } from "react-hook-form";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { X, Plus } from "lucide-react";
 
+// Updated interface to ensure tags are strings
 interface FormTagsProps {
   defaultTags?: string[];
+  onChange?: (tags: string[]) => void;
 }
 
-const FormTags: React.FC<FormTagsProps> = ({ defaultTags = [] }) => {
-  const { setValue, watch } = useFormContext();
-  const [newTag, setNewTag] = useState("");
-  const tags = watch("tags") || defaultTags;
-
-  const handleAddTag = () => {
-    if (!newTag.trim()) return;
-
-    // Prevenir duplicatas
-    if (tags.includes(newTag.trim())) {
-      setNewTag("");
-      return;
+const FormTags: React.FC<FormTagsProps> = ({ 
+  defaultTags = [], 
+  onChange 
+}) => {
+  const [tags, setTags] = useState<string[]>(defaultTags);
+  const [inputValue, setInputValue] = useState("");
+  
+  // Update parent component when tags change
+  useEffect(() => {
+    if (onChange) {
+      onChange(tags);
     }
-
-    setValue("tags", [...tags, newTag.trim()], { shouldValidate: true, shouldDirty: true });
-    setNewTag("");
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setValue(
-      "tags",
-      tags.filter((tag: string) => tag !== tagToRemove),
-      { shouldValidate: true, shouldDirty: true }
-    );
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+  }, [tags, onChange]);
+  
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && inputValue.trim()) {
       e.preventDefault();
-      handleAddTag();
+      if (!tags.includes(inputValue.trim())) {
+        const newTags = [...tags, inputValue.trim()];
+        setTags(newTags);
+      }
+      setInputValue("");
     }
   };
-
+  
+  const addTag = () => {
+    if (inputValue.trim() && !tags.includes(inputValue.trim())) {
+      const newTags = [...tags, inputValue.trim()];
+      setTags(newTags);
+      setInputValue("");
+    }
+  };
+  
+  const removeTag = (tagToRemove: string) => {
+    const newTags = tags.filter(tag => tag !== tagToRemove);
+    setTags(newTags);
+  };
+  
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Tag className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Adicionar etiqueta..."
-            value={newTag}
-            onChange={(e) => setNewTag(e.target.value)}
-            onKeyDown={handleKeyPress}
-            className="pl-8"
-          />
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          onClick={handleAddTag}
-          disabled={!newTag.trim()}
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {tags.map((tag, index) => (
+          <Badge key={index} variant="secondary" className="px-3 py-1">
+            {tag}
+            <button 
+              type="button" 
+              className="ml-2 text-muted-foreground hover:text-foreground"
+              onClick={() => removeTag(tag)}
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
+        {tags.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            Nenhuma etiqueta adicionada
+          </p>
+        )}
+      </div>
+      
+      <div className="flex gap-2">
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Adicionar etiqueta..."
+          className="flex-grow"
+        />
+        <Button 
+          type="button" 
+          variant="outline" 
+          size="icon"
+          onClick={addTag}
+          disabled={!inputValue.trim()}
         >
-          <Plus className="h-4 w-4 mr-1" />
-          Adicionar
+          <Plus className="h-4 w-4" />
         </Button>
       </div>
-
-      <ScrollArea className="h-auto max-h-28">
-        <div className="flex flex-wrap gap-1.5">
-          {tags.length > 0 ? (
-            tags.map((tag: string) => (
-              <Badge key={tag} variant="secondary" className="px-2 py-1 gap-1">
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveTag(tag)}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </Badge>
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground italic">
-              Nenhuma etiqueta adicionada
-            </p>
-          )}
-        </div>
-      </ScrollArea>
     </div>
   );
 };

@@ -63,7 +63,7 @@ const mockClientes: Cliente[] = [
   },
 ];
 
-export interface ClientesFilters {
+export interface ClientesFiltersOptions {
   searchTerm: string;
   statusFilter: string;
   tipoFilter: string;
@@ -75,7 +75,7 @@ export function useClientesData() {
   const [clientes, setClientes] = useState<Cliente[]>(mockClientes);
   const [deleteClienteId, setDeleteClienteId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [filters, setFilters] = useState<ClientesFilters>({
+  const [filters, setFilters] = useState<ClientesFiltersOptions>({
     searchTerm: "",
     statusFilter: "todos",
     tipoFilter: "todos",
@@ -149,7 +149,8 @@ export function useClientesData() {
   
   // Function to handle reminder creation
   const handleAddReminder = (cliente: Cliente) => {
-    sonnerToast.success("Lembrete adicionado", {
+    sonnerToast({
+      title: "Lembrete adicionado",
       description: `Próximo contato com ${cliente.nome} foi agendado.`,
       action: {
         label: "Ver",
@@ -167,13 +168,14 @@ export function useClientesData() {
     
     // Simulação de download
     setTimeout(() => {
-      sonnerToast.success("Dados exportados com sucesso!", {
+      sonnerToast({
+        title: "Dados exportados com sucesso!",
         description: `O arquivo ${format.toUpperCase()} foi baixado.`
       });
     }, 2000);
   };
   
-  const updateFilters = (newFilters: Partial<ClientesFilters>) => {
+  const updateFilters = (newFilters: Partial<ClientesFiltersOptions>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
   };
   

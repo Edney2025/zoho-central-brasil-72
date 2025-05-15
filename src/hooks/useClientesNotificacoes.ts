@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from '@/components/ui/use-toast';
 import { NotificacaoCliente, verificarNotificacoesDoDia } from '@/services/notificacoesClientesService';
 
@@ -9,6 +9,7 @@ export function useClientesNotificacoes() {
   const [notificacoes, setNotificacoes] = useState<NotificacaoCliente[]>([]);
   const [notificacoesHoje, setNotificacoesHoje] = useState<NotificacaoCliente[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   // Carregar notificações (simulação)
   const carregarNotificacoes = useCallback(async () => {
@@ -51,7 +52,8 @@ export function useClientesNotificacoes() {
       // Exibir notificações do dia
       if (notifHoje.length > 0) {
         notifHoje.forEach(notif => {
-          sonnerToast.info(`${notif.tipo === 'aniversario' ? '🎂' : '📅'} Hoje: ${notif.descricao}`, {
+          sonnerToast({
+            title: `${notif.tipo === 'aniversario' ? '🎂' : '📅'} Hoje: ${notif.descricao}`,
             description: notif.clienteNome,
             action: {
               label: "Ver",
@@ -71,7 +73,7 @@ export function useClientesNotificacoes() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const marcarComoConcluida = useCallback((id: string) => {
     setNotificacoes(prev => 
@@ -87,7 +89,7 @@ export function useClientesNotificacoes() {
       title: "Notificação concluída",
       description: "A notificação foi marcada como concluída"
     });
-  }, []);
+  }, [toast]);
 
   const cancelarNotificacao = useCallback((id: string) => {
     setNotificacoes(prev => 
@@ -103,7 +105,7 @@ export function useClientesNotificacoes() {
       title: "Notificação cancelada",
       description: "A notificação foi cancelada"
     });
-  }, []);
+  }, [toast]);
 
   // Carregar notificações ao iniciar
   useEffect(() => {

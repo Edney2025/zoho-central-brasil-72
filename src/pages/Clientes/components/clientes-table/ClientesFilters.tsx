@@ -7,11 +7,11 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { ClientesFilters } from '../../hooks/useClientesData';
+import { type ClientesFiltersOptions } from '../../hooks/useClientesData';
 
 interface ClientesFiltersProps {
-  filters: ClientesFilters;
-  onFilterChange: (newFilters: Partial<ClientesFilters>) => void;
+  filters: ClientesFiltersOptions;
+  onFilterChange: (newFilters: Partial<ClientesFiltersOptions>) => void;
   allTags: string[];
 }
 
