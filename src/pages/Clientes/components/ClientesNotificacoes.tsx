@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Calendar, CheckCircle, X, RefreshCw } from "lucide-react";
 import { useClientesNotificacoes } from "@/hooks/useClientesNotificacoes";
-import { NotificacaoCliente, formatarDataNotificacao } from "@/services/notificacoesClientesService";
+import { NotificacaoCliente, formatarDataNotificacao, TipoNotificacao } from "@/services/notificacoesClientesService";
 
 interface NotificacaoItemProps {
   notificacao: NotificacaoCliente;

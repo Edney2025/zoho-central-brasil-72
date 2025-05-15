@@ -31,7 +31,7 @@ export function useClientesNotificacoes() {
           id: '1',
           clienteId: '1',
           clienteNome: 'João Silva',
-          tipo: 'aniversario',
+          tipo: 'aniversario' as TipoNotificacao,
           data: new Date().toISOString(), // Hoje
           descricao: 'Aniversário do cliente',
           status: 'pendente',
@@ -41,7 +41,7 @@ export function useClientesNotificacoes() {
           id: '2',
           clienteId: '2',
           clienteNome: 'Empresa ABC',
-          tipo: 'renovacao',
+          tipo: 'renovacao' as TipoNotificacao,
           data: new Date(Date.now() + 86400000 * 3).toISOString(), // Daqui a 3 dias
           descricao: 'Renovação do contrato anual',
           status: 'pendente',
