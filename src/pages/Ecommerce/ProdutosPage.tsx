@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,24 +18,77 @@ import {
   ShoppingCart,
   Heart,
   Tag,
-  PlusCircle
+  PlusCircle,
+  Wrench
 } from 'lucide-react';
 import { ProductCard } from './components/ProductCard';
 import { produtosNovos, produtosUsados } from './data/produtos';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+
+// Mock data for services
+const servicos = [
+  {
+    id: 's1',
+    nome: 'Instalação de Ar Condicionado',
+    descricao: 'Serviço profissional de instalação de ar condicionado split.',
+    preco: 'R$ 350,00',
+    imagem: 'https://placehold.co/800x600?text=Serviço',
+    vendedor: 'Técnico João',
+    avaliacao: 4.8
+  },
+  {
+    id: 's2',
+    nome: 'Manutenção de Computadores',
+    descricao: 'Formatação, limpeza e otimização de desempenho para computadores e notebooks.',
+    preco: 'R$ 180,00',
+    imagem: 'https://placehold.co/800x600?text=Serviço',
+    vendedor: 'TechService',
+    avaliacao: 4.5
+  },
+  {
+    id: 's3',
+    nome: 'Instalação de TV e Home Theater',
+    descricao: 'Montagem, instalação e configuração de TVs e sistemas de home theater.',
+    preco: 'R$ 250,00',
+    imagem: 'https://placehold.co/800x600?text=Serviço',
+    vendedor: 'AudioVideo Express',
+    avaliacao: 4.7
+  }
+];
 
 const ProdutosPage = () => {
-  const [activeTab, setActiveTab] = useState("novos");
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const tipoParam = searchParams.get('tipo');
+  
+  const [activeTab, setActiveTab] = useState(tipoParam === 'usados' ? 'usados' : tipoParam === 'servicos' ? 'servicos' : 'novos');
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   
   const handleAnunciar = () => {
-    navigate('/ecommerce/anunciar');
+    navigate('/portal/anunciar');
+  };
+  
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Update URL without refreshing the page
+    const newSearchParams = new URLSearchParams(location.search);
+    newSearchParams.set('tipo', value);
+    navigate({
+      pathname: location.pathname,
+      search: newSearchParams.toString()
+    }, { replace: true });
   };
 
-  const filteredProdutos = activeTab === "novos" 
-    ? produtosNovos.filter(p => p.nome.toLowerCase().includes(searchQuery.toLowerCase()))
-    : produtosUsados.filter(p => p.nome.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredItems = () => {
+    if (activeTab === 'novos') {
+      return produtosNovos.filter(p => p.nome.toLowerCase().includes(searchQuery.toLowerCase()));
+    } else if (activeTab === 'usados') {
+      return produtosUsados.filter(p => p.nome.toLowerCase().includes(searchQuery.toLowerCase()));
+    } else {
+      return servicos.filter(s => s.nome.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,7 +166,7 @@ const ProdutosPage = () => {
               <div className="relative flex-1">
                 <Search className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
                 <Input 
-                  placeholder="Buscar produtos..." 
+                  placeholder="Buscar produtos ou serviços..." 
                   className="pl-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -139,8 +192,8 @@ const ProdutosPage = () => {
               </Button>
             </div>
             
-            <Tabs defaultValue="novos" className="w-full" onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-2 mb-4">
+            <Tabs defaultValue={activeTab} className="w-full" onValueChange={handleTabChange}>
+              <TabsList className="grid grid-cols-3 mb-4">
                 <TabsTrigger value="novos" className="flex items-center">
                   <Package className="mr-2 h-4 w-4" />
                   Produtos Novos
@@ -149,11 +202,15 @@ const ProdutosPage = () => {
                   <PackageOpen className="mr-2 h-4 w-4" />
                   Produtos Usados
                 </TabsTrigger>
+                <TabsTrigger value="servicos" className="flex items-center">
+                  <Wrench className="mr-2 h-4 w-4" />
+                  Serviços
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="novos" className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {filteredProdutos.map((produto) => (
+                  {filteredItems().map((produto: any) => (
                     <ProductCard 
                       key={produto.id} 
                       produto={produto} 
@@ -165,12 +222,39 @@ const ProdutosPage = () => {
               
               <TabsContent value="usados" className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  {filteredProdutos.map((produto) => (
+                  {filteredItems().map((produto: any) => (
                     <ProductCard 
                       key={produto.id} 
                       produto={produto} 
                       isNew={false} 
                     />
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="servicos" className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {filteredItems().map((servico: any) => (
+                    <div key={servico.id} className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="aspect-video bg-muted relative">
+                        <img 
+                          src={servico.imagem} 
+                          alt={servico.nome}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-medium truncate">{servico.nome}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2 h-10">{servico.descricao}</p>
+                        <div className="flex justify-between items-center mt-2">
+                          <p className="font-bold">{servico.preco}</p>
+                          <p className="text-sm">{servico.vendedor}</p>
+                        </div>
+                        <div className="mt-4">
+                          <Button className="w-full">Solicitar</Button>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </TabsContent>

@@ -13,7 +13,12 @@ import {
   HelpCircle,
   User,
   LogOut,
-  Store
+  Store,
+  Package,
+  PackageOpen,
+  Tag,
+  Wrench,
+  Plus
 } from 'lucide-react';
 
 interface PortalSidebarProps {
@@ -51,6 +56,15 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({ user, onSignOut })
         </div>
       </div>
       
+      <div className="px-4 py-2">
+        <Button variant="default" className="w-full justify-start" asChild>
+          <NavLink to="/portal/anunciar">
+            <Plus className="mr-2 h-4 w-4" />
+            Vender um Item
+          </NavLink>
+        </Button>
+      </div>
+      
       <Separator className="my-4" />
       
       <nav className="flex-1 px-2 space-y-1">
@@ -71,6 +85,57 @@ export const PortalSidebar: React.FC<PortalSidebarProps> = ({ user, onSignOut })
             {item.label}
           </NavLink>
         ))}
+        
+        <div className="pt-2 pb-2">
+          <Separator />
+        </div>
+        
+        <h3 className="px-3 py-2 text-sm font-medium text-muted-foreground">Catálogo</h3>
+        
+        <NavLink
+          to="/ecommerce/produtos?tipo=novos"
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors",
+              isActive 
+                ? "bg-primary text-primary-foreground font-medium" 
+                : "text-foreground hover:bg-muted"
+            )
+          }
+        >
+          <Package className="h-5 w-5" />
+          Produtos Novos
+        </NavLink>
+        
+        <NavLink
+          to="/ecommerce/produtos?tipo=usados"
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors",
+              isActive 
+                ? "bg-primary text-primary-foreground font-medium" 
+                : "text-foreground hover:bg-muted"
+            )
+          }
+        >
+          <PackageOpen className="h-5 w-5" />
+          Produtos Usados
+        </NavLink>
+        
+        <NavLink
+          to="/ecommerce/servicos"
+          className={({ isActive }) =>
+            cn(
+              "flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors",
+              isActive 
+                ? "bg-primary text-primary-foreground font-medium" 
+                : "text-foreground hover:bg-muted"
+            )
+          }
+        >
+          <Wrench className="h-5 w-5" />
+          Serviços
+        </NavLink>
         
         <div className="pt-2 pb-2">
           <Separator />
