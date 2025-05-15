@@ -1,10 +1,11 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { localStorageService } from "@/services/localStorageService";
 
 import { MainLayout } from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -14,7 +15,6 @@ import FinanceiroPage from "./pages/Financeiro/FinanceiroPage";
 import EstoquePage from "./pages/Estoque/EstoquePage";
 import PedidosPage from "./pages/Pedidos/PedidosPage";
 import CalculadorasPage from "./pages/Calculadoras/CalculadorasPage";
-import ProdutosNovosCalculadora from "./features/calculadoras/pages/ProdutosNovosCalculadora";
 import ConfiguracoesPage from "./pages/Configuracoes/ConfiguracoesPage";
 import ContratosPage from "./pages/Contratos/ContratosPage";
 import RelatoriosPage from "./pages/Relatorios/RelatoriosPage";
@@ -28,6 +28,18 @@ import EmprestimosPage from "./pages/Emprestimos/EmprestimosPage";
 import FinanciamentosPage from "./pages/Financiamentos/FinanciamentosPage";
 import GarantiasPage from "./pages/Garantias/GarantiasPage";
 import OutrosProdutosPage from "./pages/OutrosProdutos/OutrosProdutosPage";
+
+// Calculadoras
+import ProdutosNovosCalculadora from "./features/calculadoras/pages/ProdutosNovosCalculadora";
+import ProdutosUsadosCalculadora from "./features/calculadoras/pages/ProdutosUsadosCalculadora";
+import SmartphonesCalculadora from "./features/calculadoras/pages/SmartphonesCalculadora";
+import FinanciamentoImoveisCalculadora from "./features/calculadoras/pages/FinanciamentoImoveisCalculadora";
+import FinanciamentoVeiculosCalculadora from "./features/calculadoras/pages/FinanciamentoVeiculosCalculadora";
+import EmprestimoPessoalCalculadora from "./features/calculadoras/pages/EmprestimoPessoalCalculadora";
+import EmprestimoConsignadoCalculadora from "./features/calculadoras/pages/EmprestimoConsignadoCalculadora";
+import GarantiaEstendidaCalculadora from "./features/calculadoras/pages/GarantiaEstendidaCalculadora";
+import ConversaoMoedasCalculadora from "./features/calculadoras/pages/ConversaoMoedasCalculadora";
+import CalculoFreteCalculadora from "./features/calculadoras/pages/CalculoFreteCalculadora";
 
 // Portal do Cliente pages
 import AuthPage from "./pages/Portal/AuthPage";
@@ -46,6 +58,13 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 const queryClient = new QueryClient();
 
 const App = () => {
+  // Initialize localStorage data on app load
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorageService.initializeDefaultData();
+    }
+  }, []);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -64,8 +83,20 @@ const App = () => {
                   <Route path="financeiro" element={<FinanceiroPage />} />
                   <Route path="estoque" element={<EstoquePage />} />
                   <Route path="pedidos" element={<PedidosPage />} />
+                  
+                  {/* Calculadoras routes */}
                   <Route path="calculadoras" element={<CalculadorasPage />} />
                   <Route path="calculadoras/produtos-novos" element={<ProdutosNovosCalculadora />} />
+                  <Route path="calculadoras/produtos-usados" element={<ProdutosUsadosCalculadora />} />
+                  <Route path="calculadoras/smartphones" element={<SmartphonesCalculadora />} />
+                  <Route path="calculadoras/financiamento-imoveis" element={<FinanciamentoImoveisCalculadora />} />
+                  <Route path="calculadoras/financiamento-veiculos" element={<FinanciamentoVeiculosCalculadora />} />
+                  <Route path="calculadoras/emprestimo-pessoal" element={<EmprestimoPessoalCalculadora />} />
+                  <Route path="calculadoras/emprestimo-consignado" element={<EmprestimoConsignadoCalculadora />} />
+                  <Route path="calculadoras/garantia-estendida" element={<GarantiaEstendidaCalculadora />} />
+                  <Route path="calculadoras/conversao-moedas" element={<ConversaoMoedasCalculadora />} />
+                  <Route path="calculadoras/calculo-frete" element={<CalculoFreteCalculadora />} />
+                  
                   <Route path="configuracoes/*" element={<ConfiguracoesPage />} />
                   <Route path="contratos" element={<ContratosPage />} />
                   <Route path="relatorios" element={<RelatoriosPage />} />
