@@ -1,4 +1,3 @@
-
 import { 
   ShoppingBag, 
   Car, 
@@ -25,11 +24,61 @@ import {
   Coins, 
   Clock, 
   Target, 
-  Percent
+  Percent,
+  Zap,
+  Battery,
+  Bike
 } from 'lucide-react';
 import { CalculadoraConfig } from '../types';
 
 export const calculadoras: CalculadoraConfig[] = [
+  // Veículos Elétricos
+  {
+    id: 'moto-eletrica',
+    nome: 'Moto Elétrica',
+    descricao: 'Financiamento de motos elétricas com condições especiais',
+    categoria: 'financiamentos',
+    icone: Zap,
+    caminhoRota: '/calculadoras/moto-eletrica',
+    mostrarNoMenu: true
+  },
+  {
+    id: 'bicicleta-eletrica-nova',
+    nome: 'Bicicleta Elétrica Nova',
+    descricao: 'Financiamento para bicicletas elétricas novas',
+    categoria: 'financiamentos',
+    icone: Bike,
+    caminhoRota: '/calculadoras/bicicleta-eletrica-nova',
+    mostrarNoMenu: true
+  },
+  {
+    id: 'bicicleta-eletrica-usada',
+    nome: 'Bicicleta Elétrica Usada',
+    descricao: 'Financiamento para bicicletas elétricas usadas',
+    categoria: 'financiamentos',
+    icone: Bike,
+    caminhoRota: '/calculadoras/bicicleta-eletrica-usada',
+    mostrarNoMenu: true
+  },
+  {
+    id: 'patinete-eletrico',
+    nome: 'Patinete Elétrico',
+    descricao: 'Financiamento para patinetes elétricos',
+    categoria: 'financiamentos',
+    icone: Zap,
+    caminhoRota: '/calculadoras/patinete-eletrico',
+    mostrarNoMenu: true
+  },
+  {
+    id: 'baterias',
+    nome: 'Baterias',
+    descricao: 'Financiamento para baterias de veículos elétricos',
+    categoria: 'financiamentos',
+    icone: Battery,
+    caminhoRota: '/calculadoras/baterias',
+    mostrarNoMenu: true
+  },
+  
   // Produtos
   {
     id: 'produtos-novos',
@@ -258,6 +307,16 @@ export const calculadoras: CalculadoraConfig[] = [
     icone: Percent,
     caminhoRota: '/calculadoras/desconto-pagamento',
     mostrarNoMenu: false
+  },
+  
+  {
+    id: 'renegociacao-dividas',
+    nome: 'Renegociação de Dívidas',
+    descricao: 'Calcule opções para renegociar suas dívidas',
+    categoria: 'outros',
+    icone: RefreshCcw,
+    caminhoRota: '/calculadoras/renegociacao-dividas',
+    mostrarNoMenu: true
   },
 ];
 
