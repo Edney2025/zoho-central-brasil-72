@@ -1,229 +1,173 @@
 
-/**
- * LocalStorage service para gerenciar dados localmente
- * Este serviço será temporário até que haja integração com banco de dados
- */
-
-// Verifica se o ambiente suporta localStorage
-const isLocalStorageAvailable = () => {
-  if (typeof window === 'undefined') return false;
-  
-  try {
-    window.localStorage.setItem('test', 'test');
-    window.localStorage.removeItem('test');
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
-// Coleções de dados simuladas
-const COLLECTIONS = {
-  USERS: 'users',
-  CUSTOMERS: 'customers',
-  ORDERS: 'orders',
-  QUOTES: 'quotes',
-  SIMULATIONS: 'simulations',
-  PRODUCTS: 'products',
-  SETTINGS: 'settings',
-  NOTIFICATIONS: 'notifications',
-  SUPPORT_TICKETS: 'support_tickets',
-  MESSAGES: 'messages',
-  FAQ: 'faq',
-};
-
-// Obter dados de uma coleção
-const getCollection = (collection: string) => {
-  if (!isLocalStorageAvailable()) return [];
-  
-  try {
-    const data = window.localStorage.getItem(collection);
-    return data ? JSON.parse(data) : [];
-  } catch (e) {
-    console.error(`Erro ao obter coleção ${collection}:`, e);
-    return [];
-  }
-};
-
-// Salvar dados em uma coleção
-const saveCollection = (collection: string, data: any[]) => {
-  if (!isLocalStorageAvailable()) return false;
-  
-  try {
-    window.localStorage.setItem(collection, JSON.stringify(data));
-    return true;
-  } catch (e) {
-    console.error(`Erro ao salvar coleção ${collection}:`, e);
-    return false;
-  }
-};
-
-// Adicionar item a uma coleção
-const addItem = (collection: string, item: any) => {
-  if (!isLocalStorageAvailable()) return null;
-  
-  try {
-    const items = getCollection(collection);
-    const newItem = { ...item, id: crypto.randomUUID(), createdAt: new Date().toISOString() };
-    items.push(newItem);
-    saveCollection(collection, items);
-    return newItem;
-  } catch (e) {
-    console.error(`Erro ao adicionar item à coleção ${collection}:`, e);
-    return null;
-  }
-};
-
-// Atualizar item em uma coleção
-const updateItem = (collection: string, id: string, updates: any) => {
-  if (!isLocalStorageAvailable()) return null;
-  
-  try {
-    const items = getCollection(collection);
-    const index = items.findIndex((item: any) => item.id === id);
-    
-    if (index !== -1) {
-      items[index] = { 
-        ...items[index], 
-        ...updates, 
-        updatedAt: new Date().toISOString() 
-      };
-      saveCollection(collection, items);
-      return items[index];
-    }
-    return null;
-  } catch (e) {
-    console.error(`Erro ao atualizar item na coleção ${collection}:`, e);
-    return null;
-  }
-};
-
-// Remover item de uma coleção
-const removeItem = (collection: string, id: string) => {
-  if (!isLocalStorageAvailable()) return false;
-  
-  try {
-    const items = getCollection(collection);
-    const filteredItems = items.filter((item: any) => item.id !== id);
-    
-    if (items.length !== filteredItems.length) {
-      saveCollection(collection, filteredItems);
-      return true;
-    }
-    return false;
-  } catch (e) {
-    console.error(`Erro ao remover item da coleção ${collection}:`, e);
-    return false;
-  }
-};
-
-// Obter um item por ID
-const getItem = (collection: string, id: string) => {
-  if (!isLocalStorageAvailable()) return null;
-  
-  try {
-    const items = getCollection(collection);
-    return items.find((item: any) => item.id === id) || null;
-  } catch (e) {
-    console.error(`Erro ao obter item da coleção ${collection}:`, e);
-    return null;
-  }
-};
-
-// Inicializar dados padrão se o localStorage estiver vazio
-const initializeDefaultData = () => {
-  if (!isLocalStorageAvailable()) return;
-  
-  // Inicializar usuários padrão se não existirem
-  if (getCollection(COLLECTIONS.USERS).length === 0) {
-    saveCollection(COLLECTIONS.USERS, [
-      {
-        id: '1',
-        email: 'admin@example.com',
-        password: 'admin123', // Apenas para fins de demonstração
-        name: 'Administrador',
-        role: 'admin',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        email: 'cliente@example.com',
-        password: 'cliente123', // Apenas para fins de demonstração
-        name: 'Cliente Exemplo',
-        role: 'customer',
-        createdAt: new Date().toISOString()
-      }
-    ]);
-  }
-  
-  // Inicializar FAQ se não existir
-  if (getCollection(COLLECTIONS.FAQ).length === 0) {
-    saveCollection(COLLECTIONS.FAQ, [
-      {
-        id: '1',
-        question: 'Como faço para solicitar um orçamento?',
-        answer: 'Você pode criar uma simulação em uma de nossas calculadoras e, ao final, clicar em "Gerar Orçamento".',
-        category: 'Orçamentos',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        question: 'Quais são os métodos de pagamento aceitos?',
-        answer: 'Aceitamos cartão de crédito, débito, boleto bancário e transferência bancária.',
-        category: 'Pagamentos',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: '3',
-        question: 'Em quanto tempo meu pedido é processado?',
-        answer: 'Após a aprovação, seu pedido é processado em até 2 dias úteis.',
-        category: 'Pedidos',
-        createdAt: new Date().toISOString()
-      }
-    ]);
-  }
-  
-  // Inicializar configurações padrão
-  if (getCollection(COLLECTIONS.SETTINGS).length === 0) {
-    saveCollection(COLLECTIONS.SETTINGS, [
-      {
-        id: '1',
-        category: 'taxas',
-        produtosNovos: 1.99,
-        produtosUsados: 2.49,
-        emprestimos: 2.99,
-        renegociacao: 1.79,
-        parcelasMax: 96,
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: '2',
-        category: 'calculadoras',
-        enabled: {
-          produtosNovos: true,
-          produtosUsados: true,
-          transportes: true,
-          emprestimos: true,
-          renegociacao: true,
-          garantias: true,
-          frete: true,
-          utilitarios: true
-        },
-        updatedAt: new Date().toISOString()
-      }
-    ]);
-  }
-};
-
-// Exportar funções e constantes úteis
 export const localStorageService = {
-  COLLECTIONS,
-  getCollection,
-  saveCollection,
-  addItem,
-  updateItem,
-  removeItem,
-  getItem,
-  initializeDefaultData,
-  isAvailable: isLocalStorageAvailable
+  /**
+   * Gets data from localStorage by key
+   */
+  getData: (key: string) => {
+    if (typeof window === 'undefined') return null;
+
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : null;
+    } catch (error) {
+      console.error(`Error getting localStorage data for key ${key}:`, error);
+      return null;
+    }
+  },
+
+  /**
+   * Sets data in localStorage by key
+   */
+  setData: (key: string, value: any) => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(`Error setting localStorage data for key ${key}:`, error);
+    }
+  },
+
+  /**
+   * Removes data from localStorage by key
+   */
+  removeData: (key: string) => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      window.localStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Error removing localStorage data for key ${key}:`, error);
+    }
+  },
+
+  /**
+   * Initializes default data in localStorage if it doesn't exist
+   */
+  initializeDefaultData: () => {
+    // Exemplo de dados padrão para inicialização
+    const orcamentosExemplo = [
+      { 
+        id: 'ORC001', 
+        cliente: {
+          nome: 'Empresa XYZ Inc',
+          email: 'contato@xyz.com',
+          telefone: '(11) 98765-4321',
+          endereco: 'Av. Paulista, 1000, São Paulo - SP'
+        },
+        valor: 'R$ 22.500,00', 
+        data: '10/05/2023', 
+        validade: '10/06/2023', 
+        status: 'pendente',
+        items: [
+          { id: 'ITEM001', nome: 'Serviço de Consultoria', quantidade: 1, valorUnitario: 'R$ 10.000,00', valorTotal: 'R$ 10.000,00' },
+          { id: 'ITEM002', nome: 'Licença de Software Premium', quantidade: 5, valorUnitario: 'R$ 2.500,00', valorTotal: 'R$ 12.500,00' }
+        ],
+        historico: [
+          { data: '10/05/2023 10:30', evento: 'Orçamento criado', usuario: 'Carlos Silva' },
+          { data: '11/05/2023 14:15', evento: 'Email enviado ao cliente', usuario: 'Ana Torres' },
+          { data: '13/05/2023 09:22', evento: 'Cliente visualizou o orçamento', usuario: 'Sistema' }
+        ],
+        condicoesPagamento: 'Parcelado em 3x sem juros',
+        observacoes: 'Entrega em até 30 dias após aprovação. Inclui treinamento básico para até 5 usuários.',
+        anexos: [
+          { nome: 'Proposta_Detalhada.pdf', tamanho: '1.2 MB' },
+          { nome: 'Termos_Servico.pdf', tamanho: '450 KB' }
+        ]
+      },
+      { 
+        id: 'ORC002', 
+        cliente: {
+          nome: 'Pedro Almeida',
+          email: 'pedro@email.com',
+          telefone: '(21) 97654-3210',
+          endereco: 'Rua das Flores, 123, Rio de Janeiro - RJ'
+        },
+        valor: 'R$ 7.800,00', 
+        data: '12/05/2023', 
+        validade: '12/06/2023', 
+        status: 'aprovado',
+        items: [
+          { id: 'ITEM003', nome: 'Consultoria Técnica', quantidade: 2, valorUnitario: 'R$ 1.900,00', valorTotal: 'R$ 3.800,00' },
+          { id: 'ITEM004', nome: 'Sistema ERP - Licença Anual', quantidade: 1, valorUnitario: 'R$ 4.000,00', valorTotal: 'R$ 4.000,00' }
+        ],
+        historico: [
+          { data: '12/05/2023 11:20', evento: 'Orçamento criado', usuario: 'Ana Torres' },
+          { data: '12/05/2023 15:45', evento: 'Email enviado ao cliente', usuario: 'Ana Torres' },
+          { data: '14/05/2023 10:30', evento: 'Cliente aprovou o orçamento', usuario: 'Sistema' },
+          { data: '14/05/2023 14:15', evento: 'Pedido #PED002 gerado', usuario: 'Sistema' }
+        ],
+        condicoesPagamento: 'À vista com 5% de desconto',
+        observacoes: 'Implementação imediata após confirmação do pagamento.',
+        anexos: [
+          { nome: 'Contrato_Servico.pdf', tamanho: '2.1 MB' }
+        ]
+      },
+      { 
+        id: 'ORC003', 
+        cliente: {
+          nome: 'Ana Ferreira',
+          email: 'ana@ferreira.com',
+          telefone: '(31) 98877-6655',
+          endereco: 'Av. Central, 500, Belo Horizonte - MG'
+        },
+        valor: 'R$ 9.200,00', 
+        data: '14/05/2023', 
+        validade: '14/06/2023', 
+        status: 'reprovado',
+        items: [
+          { id: 'ITEM005', nome: 'Desenvolvimento Web', quantidade: 1, valorUnitario: 'R$ 5.200,00', valorTotal: 'R$ 5.200,00' },
+          { id: 'ITEM006', nome: 'Hospedagem Premium (Anual)', quantidade: 2, valorUnitario: 'R$ 2.000,00', valorTotal: 'R$ 4.000,00' }
+        ],
+        historico: [
+          { data: '14/05/2023 09:10', evento: 'Orçamento criado', usuario: 'Carlos Silva' },
+          { data: '14/05/2023 10:30', evento: 'Email enviado ao cliente', usuario: 'Ana Torres' },
+          { data: '18/05/2023 16:45', evento: 'Cliente rejeitou o orçamento', usuario: 'Sistema' },
+          { data: '19/05/2023 11:20', evento: 'Feedback registrado: Valor acima do orçado pelo cliente', usuario: 'Carlos Silva' }
+        ],
+        condicoesPagamento: 'Parcelado em 2x sem juros',
+        observacoes: 'Cliente solicitou renegociação dos valores. Aguardando retorno para novo orçamento.',
+        anexos: [
+          { nome: 'Especificacoes_Tecnicas.pdf', tamanho: '1.8 MB' },
+          { nome: 'Cronograma_Projeto.pdf', tamanho: '550 KB' }
+        ]
+      },
+      { 
+        id: 'ORC004', 
+        cliente: {
+          nome: 'Empresa ABC Ltda',
+          email: 'financeiro@abc.com',
+          telefone: '(11) 3322-1100',
+          endereco: 'Rua Comercial, 200, São Paulo - SP'
+        },
+        valor: 'R$ 15.300,00', 
+        data: '18/05/2023', 
+        validade: '18/06/2023', 
+        status: 'pendente',
+        items: [
+          { id: 'ITEM007', nome: 'Consultoria Estratégica', quantidade: 1, valorUnitario: 'R$ 8.300,00', valorTotal: 'R$ 8.300,00' },
+          { id: 'ITEM008', nome: 'Treinamento Personalizado', quantidade: 2, valorUnitario: 'R$ 3.500,00', valorTotal: 'R$ 7.000,00' }
+        ],
+        historico: [
+          { data: '18/05/2023 14:20', evento: 'Orçamento criado', usuario: 'Ana Torres' },
+          { data: '18/05/2023 16:30', evento: 'Email enviado ao cliente', usuario: 'Ana Torres' },
+          { data: '20/05/2023 09:45', evento: 'Cliente visualizou o orçamento', usuario: 'Sistema' },
+          { data: '21/05/2023 11:10', evento: 'Cliente solicitou reunião', usuario: 'Carlos Silva' }
+        ],
+        condicoesPagamento: 'Entrada de 30% + 3x sem juros',
+        observacoes: 'Cliente solicitou reunião para esclarecimentos adicionais. Agendada para 25/05.',
+        anexos: [
+          { nome: 'Proposta_Detalhada.pdf', tamanho: '2.4 MB' },
+          { nome: 'Apresentacao_Servicos.pdf', tamanho: '1.8 MB' }
+        ]
+      }
+    ];
+
+    // Inicializar orçamentos se não existirem
+    if (!localStorageService.getData('orcamentos')) {
+      localStorageService.setData('orcamentos', orcamentosExemplo);
+    }
+
+    // Adicione outras inicializações conforme necessário
+  },
 };

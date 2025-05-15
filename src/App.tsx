@@ -30,6 +30,10 @@ import FinanciamentosPage from "./pages/Financiamentos/FinanciamentosPage";
 import GarantiasPage from "./pages/Garantias/GarantiasPage";
 import OutrosProdutosPage from "./pages/OutrosProdutos/OutrosProdutosPage";
 
+// Importar as novas páginas de orçamentos
+import OrcamentosPage from "./pages/Orcamentos/OrcamentosPage";
+import OrcamentoDetalhes from "./pages/Orcamentos/OrcamentoDetalhes";
+
 // Calculadoras
 import ProdutosNovosCalculadora from "./features/calculadoras/pages/ProdutosNovosCalculadora";
 import ProdutosUsadosCalculadora from "./features/calculadoras/pages/ProdutosUsadosCalculadora";
@@ -47,7 +51,7 @@ import AuthPage from "./pages/Portal/AuthPage";
 import PortalLayout from "./pages/Portal/PortalLayout";
 import DashboardPage from "./pages/Portal/DashboardPage";
 import PedidosPortalPage from "./pages/Portal/PedidosPage";
-import OrcamentosPage from "./pages/Portal/OrcamentosPage";
+import OrcamentosPortalPage from "./pages/Portal/OrcamentosPage";
 import SuportePage from "./pages/Portal/SuportePage";
 import FAQPage from "./pages/Portal/FAQPage";
 import ProfilePage from "./pages/Portal/ProfilePage";
@@ -93,6 +97,11 @@ const App = () => {
                   <Route path="pedidos" element={<PedidosPage />} />
                   <Route path="pedidos/orcamento/:id" element={<OrcamentoDetalhe />} />
                   
+                  {/* Nova seção de orçamentos */}
+                  <Route path="orcamentos" element={<OrcamentosPage />} />
+                  <Route path="orcamentos/:id" element={<OrcamentoDetalhes />} />
+                  <Route path="orcamentos/novo" element={<OrcamentoDetalhes />} />
+                  
                   {/* E-commerce routes */}
                   <Route path="ecommerce">
                     <Route path="produtos" element={<ProdutosPage />} />
@@ -137,7 +146,7 @@ const App = () => {
                   <Route index element={<Navigate to="/portal/dashboard" replace />} />
                   <Route path="dashboard" element={<DashboardPage />} />
                   <Route path="pedidos" element={<PedidosPortalPage />} />
-                  <Route path="orcamentos" element={<OrcamentosPage />} />
+                  <Route path="orcamentos" element={<OrcamentosPortalPage />} />
                   <Route path="orcamento/:id" element={<OrcamentoDetalhe />} />
                   <Route path="suporte" element={<SuportePage />} />
                   <Route path="faq" element={<FAQPage />} />
