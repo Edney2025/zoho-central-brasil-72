@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Simulacao } from '../types';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useSimulacoes = () => {
@@ -43,7 +43,10 @@ export const useSimulacoes = () => {
     } as Simulacao;
     
     setSimulacoes(prev => [...prev, newSimulacao]);
-    toast.success('Simulação salva com sucesso!');
+    toast({
+      title: "Sucesso",
+      description: 'Simulação salva com sucesso!'
+    });
     return newSimulacao;
   };
 
@@ -53,13 +56,19 @@ export const useSimulacoes = () => {
         sim.id === id ? { ...sim, ...simulacao } as Simulacao : sim
       )
     );
-    toast.success('Simulação atualizada com sucesso!');
+    toast({
+      title: "Sucesso",
+      description: 'Simulação atualizada com sucesso!'
+    });
   };
 
   const removeSimulacao = (id: string) => {
     setSimulacoes(prev => prev.filter(sim => sim.id !== id));
     setSelectedSimulacoes(prev => prev.filter(simId => simId !== id));
-    toast.success('Simulação removida com sucesso!');
+    toast({
+      title: "Sucesso",
+      description: 'Simulação removida com sucesso!'
+    });
   };
 
   const toggleSelectSimulacao = (id: string) => {
@@ -93,13 +102,31 @@ export const useSimulacoes = () => {
       // Simulando uma chamada à API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // TODO: Integrar com a API do Supabase quando as tabelas estiverem criadas
+      // Salvando localmente no localStorage para testes
+      const orcamentos = JSON.parse(localStorage.getItem('orcamentos') || '[]');
+      const novoOrcamento = {
+        id: uuidv4(),
+        simulacaoId: simulacao.id,
+        data: new Date(),
+        status: 'pendente',
+        valorTotal: simulacao.valorTotal,
+        detalhes: simulacao
+      };
       
-      toast.success('Orçamento criado com sucesso!');
+      localStorage.setItem('orcamentos', JSON.stringify([...orcamentos, novoOrcamento]));
+      
+      toast({
+        title: "Sucesso",
+        description: 'Orçamento criado com sucesso!'
+      });
       return { success: true, simulacao };
     } catch (error) {
       console.error('Erro ao criar orçamento:', error);
-      toast.error('Erro ao criar orçamento. Tente novamente.');
+      toast({
+        title: "Erro",
+        description: 'Erro ao criar orçamento. Tente novamente.',
+        variant: "destructive"
+      });
       return { success: false, error };
     } finally {
       setLoading(false);
@@ -110,7 +137,11 @@ export const useSimulacoes = () => {
     const simulacao = simulacoes.find(sim => sim.id === simulacaoId);
     
     if (!simulacao) {
-      toast.error('Simulação não encontrada');
+      toast({
+        title: "Erro",
+        description: 'Simulação não encontrada',
+        variant: "destructive"
+      });
       return;
     }
 
@@ -120,10 +151,17 @@ export const useSimulacoes = () => {
         (simulacao.parcelas ? `Em ${simulacao.parcelas}x de R$ ${(simulacao.valorParcela || 0).toFixed(2)}\n` : '') +
         `Gerado em ${simulacao.data.toLocaleDateString()}`
       );
-      toast.success('Informações copiadas para a área de transferência!');
+      toast({
+        title: "Sucesso",
+        description: 'Informações copiadas para a área de transferência!'
+      });
     } catch (error) {
       console.error('Erro ao compartilhar simulação:', error);
-      toast.error('Erro ao compartilhar simulação.');
+      toast({
+        title: "Erro",
+        description: 'Erro ao compartilhar simulação.',
+        variant: "destructive"
+      });
     }
   };
 

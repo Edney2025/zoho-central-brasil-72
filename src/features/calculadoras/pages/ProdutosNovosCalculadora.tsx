@@ -35,7 +35,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useSimulacoes } from '../hooks/useSimulacoes';
 import { ProdutoSimulacao } from '../types';
-import { toast } from '@/components/ui/sonner';
+import { toast } from '@/components/ui/use-toast';
 import { formatarMoeda } from '@/lib/utils';
 
 const formSchema = z.object({
@@ -171,16 +171,26 @@ ${resultado.valorGarantia ? `Valor da Garantia: ${formatarMoeda(resultado.valorG
       `;
       
       navigator.clipboard.writeText(text);
-      toast.success('Informações copiadas para a área de transferência!');
+      toast({
+        title: "Sucesso",
+        description: 'Informações copiadas para a área de transferência!'
+      });
     } catch (error) {
-      toast.error('Erro ao compartilhar simulação.');
+      toast({
+        title: "Erro",
+        description: 'Erro ao compartilhar simulação.',
+        variant: "destructive"
+      });
     }
   };
   
   const handleCreateOrcamento = () => {
     if (!simulacaoSalva) return;
     
-    toast.success('Redirecionando para criação de orçamento...');
+    toast({
+      title: "Sucesso",
+      description: 'Redirecionando para criação de orçamento...'
+    });
     // Aqui seria a integração com o sistema de orçamentos
   };
   
