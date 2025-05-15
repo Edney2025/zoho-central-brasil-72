@@ -1,111 +1,101 @@
 
-import React, { useState } from "react";
-import { Card } from "@/components/ui/card";
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useFormContext } from "react-hook-form";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Trash2 } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
+import { ClienteFormValues } from "./schema";
+import { v4 as uuidv4 } from "uuid";
 
-interface Note {
-  id: string;
-  text: string;
-  date: string;
+interface FormNotesProps {
+  form: UseFormReturn<ClienteFormValues>;
 }
 
-const FormNotes: React.FC = () => {
-  const { setValue, watch } = useFormContext();
+const FormNotes: React.FC<FormNotesProps> = ({ form }) => {
   const [newNote, setNewNote] = useState("");
-  const notes = watch("notes") || [];
-  const [isOpen, setIsOpen] = useState(false);
+  const notes = form.watch("notes") || [];
 
-  const handleAddNote = () => {
-    if (!newNote.trim()) return;
-
-    const newNoteObject = {
-      id: Date.now().toString(),
-      text: newNote.trim(),
-      date: new Date().toISOString(),
-    };
-
-    setValue("notes", [newNoteObject, ...notes], { 
-      shouldValidate: true,
-      shouldDirty: true 
-    });
-    
-    setNewNote("");
+  const addNote = () => {
+    if (newNote.trim()) {
+      const updatedNotes = [
+        ...notes,
+        {
+          id: uuidv4(),
+          text: newNote.trim(),
+          date: new Date().toISOString()
+        }
+      ];
+      form.setValue("notes", updatedNotes, { shouldValidate: true });
+      setNewNote("");
+    }
   };
 
-  const handleRemoveNote = (noteId: string) => {
-    setValue(
-      "notes",
-      notes.filter((note: Note) => note.id !== noteId),
-      { shouldValidate: true, shouldDirty: true }
-    );
+  const removeNote = (noteId: string) => {
+    const updatedNotes = notes.filter((note) => note.id !== noteId);
+    form.setValue("notes", updatedNotes, { shouldValidate: true });
   };
 
   return (
-    <div className="space-y-3">
-      <Textarea
-        placeholder="Adicione uma nota sobre este cliente..."
-        value={newNote}
-        onChange={(e) => setNewNote(e.target.value)}
-        className="min-h-[100px]"
-      />
-      
-      <div className="flex justify-end">
-        <Button 
-          type="button" 
-          onClick={handleAddNote}
-          disabled={!newNote.trim()}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Adicionar Nota
-        </Button>
+    <div className="space-y-4">
+      <div className="flex flex-col space-y-2">
+        <label className="text-sm font-medium">Notas</label>
+        <p className="text-xs text-muted-foreground">
+          Adicione notas ou observações sobre o cliente
+        </p>
+        <div className="flex gap-2">
+          <Input
+            value={newNote}
+            onChange={(e) => setNewNote(e.target.value)}
+            placeholder="Nova nota..."
+            className="flex-1"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addNote();
+              }
+            }}
+          />
+          <Button 
+            type="button" 
+            onClick={addNote} 
+            size="sm" 
+            variant="secondary"
+            disabled={!newNote.trim()}
+          >
+            Adicionar
+          </Button>
+        </div>
       </div>
 
-      {notes.length > 0 && (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" className="w-full justify-between">
-              {notes.length} {notes.length === 1 ? "nota" : "notas"} registradas
-              <span className="text-xs text-muted-foreground">
-                {isOpen ? "Ocultar" : "Mostrar"}
-              </span>
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <ScrollArea className="h-auto max-h-60 mt-3">
-              <div className="space-y-3">
-                {notes.map((note: Note) => (
-                  <Card key={note.id} className="p-3 text-sm">
-                    <div className="flex justify-between items-start gap-2">
-                      <div className="flex-1">
-                        <p className="whitespace-pre-wrap">{note.text}</p>
-                        <p className="text-xs flex items-center mt-2 text-muted-foreground">
-                          <CalendarIcon className="h-3 w-3 mr-1" />
-                          {format(new Date(note.date), "PPp", { locale: ptBR })}
-                        </p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleRemoveNote(note.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </ScrollArea>
-          </CollapsibleContent>
-        </Collapsible>
-      )}
+      <div className="space-y-3 mt-4">
+        {notes.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhuma nota adicionada</p>
+        ) : (
+          notes.map((note) => (
+            <Card key={note.id} className="relative group">
+              <CardContent className="p-3">
+                <div className="flex justify-between">
+                  <p className="text-sm">{note.text}</p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => removeNote(note.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                    <span className="sr-only">Remover nota</span>
+                  </Button>
+                </div>
+                <time className="text-xs text-muted-foreground">
+                  {new Date(note.date).toLocaleString()}
+                </time>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 };

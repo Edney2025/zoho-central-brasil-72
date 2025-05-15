@@ -3,23 +3,16 @@ import React from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { z } from "zod";
 import { UseFormReturn } from "react-hook-form";
-
-const personalInfoSchema = z.object({
-  nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
-  email: z.string().email("Email inválido").min(1, "Email é obrigatório"),
-  telefone: z.string().min(10, "Telefone inválido"),
-  tipoPessoa: z.enum(["fisica", "juridica"]),
-});
-
-export type PersonalInfoFormValues = z.infer<typeof personalInfoSchema>;
+import { ClienteFormValues } from "./schema";
 
 interface FormPersonalInfoProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<ClienteFormValues>;
 }
 
-const FormPersonalInfo: React.FC<FormPersonalInfoProps> = ({ form }) => {
+const FormPersonalInfo: React.FC<FormPersonalInfoProps> & {
+  AdditionalInfo: React.FC<FormPersonalInfoProps>;
+} = ({ form }) => {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Informações Pessoais</h3>
@@ -105,5 +98,62 @@ const FormPersonalInfo: React.FC<FormPersonalInfoProps> = ({ form }) => {
     </div>
   );
 };
+
+// Additional Info component as a property of FormPersonalInfo
+const AdditionalInfo: React.FC<FormPersonalInfoProps> = ({ form }) => {
+  return (
+    <div className="space-y-4">
+      <h3 className="text-lg font-medium">Informações Adicionais</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="profissao"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Profissão/Cargo</FormLabel>
+              <FormControl>
+                <Input placeholder="Profissão ou cargo" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="dataNascimento"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Data de Nascimento</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="col-span-1 md:col-span-2">
+          <FormField
+            control={form.control}
+            name="observacoes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Observações</FormLabel>
+                <FormControl>
+                  <Input placeholder="Observações adicionais sobre o cliente" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+FormPersonalInfo.AdditionalInfo = AdditionalInfo;
 
 export default FormPersonalInfo;

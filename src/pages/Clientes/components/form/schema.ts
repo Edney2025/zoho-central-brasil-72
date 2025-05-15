@@ -1,7 +1,7 @@
 
 import { z } from "zod";
 
-// Define o schema para validação do formulário
+// Define schema for validating the form
 export const clienteFormSchema = z.object({
   // Dados pessoais
   nome: z.string().min(3, { message: "Nome deve ter pelo menos 3 caracteres" }),
@@ -14,13 +14,13 @@ export const clienteFormSchema = z.object({
   rgInscricao: z.string().optional(),
 
   // Endereço
-  cep: z.string().min(8, { message: "CEP inválido" }),
-  endereco: z.string().min(3, { message: "Endereço inválido" }),
-  numero: z.string().min(1, { message: "Número é obrigatório" }),
+  cep: z.string().min(8, { message: "CEP inválido" }).optional().or(z.literal("")),
+  endereco: z.string().min(3, { message: "Endereço inválido" }).optional().or(z.literal("")),
+  numero: z.string().min(1, { message: "Número é obrigatório" }).optional().or(z.literal("")),
   complemento: z.string().optional(),
-  bairro: z.string().min(2, { message: "Bairro inválido" }),
-  cidade: z.string().min(2, { message: "Cidade inválida" }),
-  estado: z.string().min(2, { message: "Estado inválido" }),
+  bairro: z.string().min(2, { message: "Bairro inválido" }).optional().or(z.literal("")),
+  cidade: z.string().min(2, { message: "Cidade inválida" }).optional().or(z.literal("")),
+  estado: z.string().min(2, { message: "Estado inválido" }).optional().or(z.literal("")),
 
   // Informações adicionais
   observacoes: z.string().optional(),
@@ -30,7 +30,6 @@ export const clienteFormSchema = z.object({
   // Novos campos
   proximoContato: z.string().optional(),
   lembreteTipo: z.string().optional(),
-  lembreteData: z.string().optional(),
   lembreteDescricao: z.string().optional(),
   tags: z.array(z.string()).default([]), 
   notes: z.array(
@@ -44,7 +43,7 @@ export const clienteFormSchema = z.object({
   classificacao: z.string().optional(),
 });
 
-// Valores padrão para inicialização do formulário
+// Default values for form initialization
 export const defaultValues: Partial<ClienteFormValues> = {
   nome: "",
   email: "",
@@ -64,7 +63,6 @@ export const defaultValues: Partial<ClienteFormValues> = {
   dataNascimento: "",
   proximoContato: "",
   lembreteTipo: "",
-  lembreteData: "",
   lembreteDescricao: "",
   tags: [],
   notes: [],
@@ -72,14 +70,14 @@ export const defaultValues: Partial<ClienteFormValues> = {
   classificacao: "Regular",
 };
 
-// Etapas do formulário
+// Form steps
 export const formSteps = [
-  { id: "personal", label: "Informações Pessoais" },
-  { id: "documents", label: "Documentos" },
-  { id: "address", label: "Endereço" },
-  { id: "files", label: "Arquivos" },
-  { id: "review", label: "Revisão" },
+  "Informações Pessoais",
+  "Documentos",
+  "Endereço",
+  "Arquivos",
+  "Revisão",
 ];
 
-// Tipo para os valores do formulário
+// Type for form values
 export type ClienteFormValues = z.infer<typeof clienteFormSchema>;
