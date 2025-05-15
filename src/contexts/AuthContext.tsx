@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkIfCustomer = async (userId: string) => {
     try {
-      // Use a type assertion for the entire query result instead
+      // Use a more generic approach with any type to work around the type constraints
       const { data, error } = await (supabase
         .from('customers') as any)
         .select('id')
