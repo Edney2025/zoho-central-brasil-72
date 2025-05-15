@@ -1,8 +1,9 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { toast as sonnerToast } from '@/components/ui/use-toast';
 import { NotificacaoCliente, verificarNotificacoesDoDia } from '@/services/notificacoesClientesService';
+import { ToastAction } from '@/components/ui/toast';
+import React from 'react';
 
 // Hook customizado para gerenciar notificações de clientes
 export function useClientesNotificacoes() {
@@ -55,10 +56,9 @@ export function useClientesNotificacoes() {
           sonnerToast({
             title: `${notif.tipo === 'aniversario' ? '🎂' : '📅'} Hoje: ${notif.descricao}`,
             description: notif.clienteNome,
-            action: {
-              label: "Ver",
+            action: React.createElement(ToastAction, {
               onClick: () => console.log("Ver notificação", notif.id)
-            }
+            }, "Ver")
           });
         });
       }

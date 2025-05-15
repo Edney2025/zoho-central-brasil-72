@@ -1,8 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "@/components/ui/use-toast";
 import { Cliente } from '../types/cliente';
+import { ToastAction } from '@/components/ui/toast';
+import React from 'react';
 
 // Mock data with additional fields
 const mockClientes: Cliente[] = [
@@ -92,13 +93,6 @@ export function useClientesData() {
     const fetchClientes = async () => {
       try {
         // In a real app, this would be connected to Supabase
-        // const { data, error } = await supabase
-        //   .from('clientes')
-        //   .select('*')
-        
-        // if (error) throw error;
-        // setClientes(data);
-        
         // Using mock data for now
         setClientes(mockClientes);
       } catch (error) {
@@ -119,14 +113,6 @@ export function useClientesData() {
     if (!deleteClienteId) return;
     
     try {
-      // In a real app, this would delete from Supabase
-      // const { error } = await supabase
-      //   .from('clientes')
-      //   .delete()
-      //   .eq('id', deleteClienteId);
-      
-      // if (error) throw error;
-      
       // For now, filter out the deleted client from state
       setClientes(prevClientes => prevClientes.filter(cliente => cliente.id !== deleteClienteId));
       
@@ -152,10 +138,9 @@ export function useClientesData() {
     sonnerToast({
       title: "Lembrete adicionado",
       description: `Próximo contato com ${cliente.nome} foi agendado.`,
-      action: {
-        label: "Ver",
+      action: React.createElement(ToastAction, {
         onClick: () => console.log("Viewing reminder")
-      }
+      }, "Ver")
     });
   };
   
